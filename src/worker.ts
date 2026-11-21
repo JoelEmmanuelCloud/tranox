@@ -1,7 +1,8 @@
-import PocketBase, { type RecordModel } from "pocketbase";
+import PocketBase, { ClientResponseError, type RecordModel } from "pocketbase";
 import type { Address, Hex } from "viem";
 import { env, type PayoutCurrency } from "./config.js";
 import { DailyCapReached, executePayout, finishPayout, syncSpentToday, utcDayStart } from "./payout.js";
+import { createLease } from "./lock.js";
 import { inspectStuck } from "./recover.js";
 import { RetryLater, TextileError } from "./textile.js";
 import { agent, publicClient } from "./wallet.js";
@@ -9,11 +10,49 @@ import { agent, publicClient } from "./wallet.js";
 const pb = new PocketBase(env.pbUrl);
 const POLL_MS = 15_000;
 const DEFAULT_RETRY_MS = 60_000;
+const LOCK_TTL_MS = 10 * 60_000;
 
 const nextAttempt = new Map<string, number>();
 const firstSeen = new Map<string, number>();
 
 type Resolution = "resolved" | "nothing_sent" | "unresolved";
+
+let stopping = false;
+let wake: (() => void) | undefined;
+
+const notFound = (e: unknown) => e instanceof ClientResponseError && e.status === 404;
+const nameTaken = (e: unknown) => e instanceof ClientResponseError && e.status === 400 && Boolean(e.response?.data?.name);
+const asLock = (r: RecordModel) => ({ id: r.id, name: String(r.name), owner: String(r.owner), heartbeat_at: String(r.heartbeat_at) });
+
+const lease = createLease(
+  {
+    find: (name) =>
+      pb.collection("worker_locks").getFirstListItem(pb.filter("name = {:name}", { name })).then(asLock, (e) => {
+        if (notFound(e)) return null;
+        throw e;
+      }),
+    get: (id) =>
+      pb.collection("worker_locks").getOne(id).then(asLock, (e) => {
+        if (notFound(e)) return null;
+        throw e;
+      }),
+    create: (rec) =>
+      pb.collection("worker_locks").create(rec).then(asLock, (e) => {
+        if (nameTaken(e)) return null;
+        throw e;
+      }),
+    touch: async (id, heartbeatAt) => {
+      await pb.collection("worker_locks").update(id, { heartbeat_at: heartbeatAt });
+    },
+    remove: async (id) => {
+      await pb.collection("worker_locks").delete(id).catch((e) => {
+        if (!notFound(e)) throw e;
+      });
+    },
+  },
+  "payout-worker",
+  LOCK_TTL_MS,
+);
 
 async function login() {
   await (pb as any).admins.authWithPassword(env.pbEmail, env.pbPassword);
@@ -136,6 +175,7 @@ async function tick() {
   const now = Date.now();
   for (const rec of queued) {
     if ((nextAttempt.get(rec.id) ?? 0) > now) continue;
+    if (stopping || !(await lease.hold())) return;
     const startedBlock = await publicClient.getBlockNumber();
     await pb.collection("payouts").update(rec.id, { status: "processing", started_block: Number(startedBlock) });
     try {
@@ -188,13 +228,29 @@ async function tick() {
   }
 }
 
+function stop() {
+  if (stopping) process.exit(1);
+  stopping = true;
+  console.log("stopping after the current check; press Ctrl+C again to force");
+  wake?.();
+}
+
 async function main() {
   await login();
-  console.log("payout worker running");
-  for (;;) {
-    await tick().catch((e) => console.error("tick error", e));
-    await new Promise((r) => setTimeout(r, POLL_MS));
+  process.on("SIGINT", stop);
+  process.on("SIGTERM", stop);
+  console.log(`payout worker ${lease.owner} running`);
+  while (!stopping) {
+    const held = await lease.hold().catch((e) => {
+      console.error("lock check failed", e);
+      return false;
+    });
+    if (held) await tick().catch((e) => console.error("tick error", e));
+    else console.error("another worker holds the payout lock; waiting");
+    if (!stopping) await new Promise<void>((r) => { wake = r; setTimeout(r, POLL_MS); });
   }
+  await lease.release().catch((e) => console.error("could not release the payout lock", e));
+  console.log("payout worker stopped");
 }
 
 main();
