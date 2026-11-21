@@ -117,6 +117,7 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - `rfq_id`, `approval_tx`, `swap_tx`, `payout_tx`, `received_units`, `error` (text)
   - `created` (autodate), used to give up on payouts that wait longer than `MAX_QUEUE_HOURS` for liquidity
   - `paid_at` (date), set when paid; the worker adds up today's `paid` and `processing` amounts on every check so `MAX_DAILY_USDT` holds across restarts
+  - `source` (text): `manual` for `swap:test` payouts, empty for milestone payouts. `job` and `freelancer` must be optional so `swap:test` can record its payouts
   - `started_block` (number), the Celo block when processing began. After a crash, or an error that may have come after a transaction was sent, the worker checks the chain from this block: a transfer to the freelancer marks the payout `paid`; a landed swap gets its transfer finished; nothing sent puts it back in the queue. While any payout cannot be settled this way it stays `processing`, its `error` says why, and no new payouts start. Only one worker runs payouts at a time; see `worker_locks` below
 - [ ] PocketBase: add a `worker_locks` collection for the single-worker lease:
   - `name` (text, unique index), `owner` (text), `heartbeat_at` (date)
@@ -131,6 +132,7 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - [x] Guardrails: max per payout, max per day, allowlist of freelancer wallets
   - [x] Per-payout cap (`MAX_PAYOUT_USDT`) fails the payout
   - [x] Daily cap (`MAX_DAILY_USDT`, UTC day) holds the payout until 00:00 UTC. "Spent today" is the highest of: USD₮ the agent wallet sent on-chain today, today's `paid` plus `processing` payouts in PocketBase, and this process's own count. Any USD₮ leaving the agent wallet counts, including `swap:test` and manual transfers
+  - [x] `swap:test` takes the same lock as the worker, refuses to run while any payout is `processing`, and records itself as a `payouts` row (`source = manual`) so recovery and the daily cap see it. `--standalone` skips all of this and is only for tests before PocketBase is set up
   - [x] Allowlist of freelancer wallets (`FREELANCER_ALLOWLIST` in `.env`, comma-separated). Kept out of PocketBase so a changed profile wallet cannot redirect a payout. Empty list means no payouts. Paying the agent wallet is refused. Add each freelancer's wallet here once you confirm it with them directly, then restart the worker
 - [ ] Retries: `no_quote` → retry later; expired quote → re-request
 - [ ] **Milestone: first real mainnet payout to a freelancer by 28 Nov**

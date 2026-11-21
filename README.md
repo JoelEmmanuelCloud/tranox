@@ -20,7 +20,8 @@ npm run wallet:new          # paste AGENT_PRIVATE_KEY into .env
 npm run balances            # after funding with CELO + USD₮
 npm run quote -- 10         # indicative prices for every corridor
 npm run register:agent      # ERC-8004 identity (host agent-card.json first)
-npm run swap:test -- <wallet> cNGN 5   # REAL mainnet payout
+npm run swap:test -- <wallet> cNGN 5   # REAL mainnet payout, recorded in PocketBase
+npm run swap:test -- <wallet> cNGN 5 --standalone   # before PocketBase exists, with no worker running
 npm run worker              # process queued GoWork payouts
 ```
 
