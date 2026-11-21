@@ -1,0 +1,11 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Tranox",
+  "description": "Pays GoWork freelancers in their local stablecoin (cNGN, IDRX, wARS, wBRL, wMXN, wCOP) on Celo, converting client USD₮ via Textile FX.",
+  "image": "",
+  "endpoints": [
+    { "name": "repo", "endpoint": "https://github.com/JoelEmmanuelCloud/tranox" }
+  ],
+  "registrations": [],
+  "supportedTrust": ["reputation"]
+}
