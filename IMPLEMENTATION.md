@@ -28,7 +28,7 @@ Celo "Agents Open for Business" hackathon · build opens 20 Nov 2026 · **submis
 
 1. PocketBase: add `wallet_address` + `payout_currency` to freelancer profiles; create the `payouts` collection (schema at top of `src/worker.ts`); add the hook that queues a payout on milestone approval
 2. Fix `login()` in `src/worker.ts` if GoWork runs PocketBase ≥ 0.23 (`_superusers` auth)
-3. Verify `npm run quote -- 10` against the live Textile API and adjust response types in `src/textile.ts` to what it actually returns
+3. ~~Verify `npm run quote -- 10` against the live Textile API~~ Done 20 Nov. Celo 42220 is live. Responses come in a `data` field, `expiresAt` is an ISO date, approvals can target `quote.spender`. Liquidity seen on 20 Nov (USD₮ in): cNGN about 42,660 and IDRX about 54,640; wBRL about 9.80, wCOP about 7.65, wARS about 0.72; wMXN had no makers online. Recheck with `npm run quote -- 5` before each payout in the thin corridors.
 4. Then the remaining unchecked items below
 
 ---
