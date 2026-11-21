@@ -117,7 +117,10 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - `rfq_id`, `approval_tx`, `swap_tx`, `payout_tx`, `received_units`, `error` (text)
   - `created` (autodate), used to give up on payouts that wait longer than `MAX_QUEUE_HOURS` for liquidity
   - `paid_at` (date), set when paid; the worker adds up today's `paid` and `processing` amounts on every check so `MAX_DAILY_USDT` holds across restarts
-  - `started_block` (number), the Celo block when processing began. After a crash, or an error that may have come after a transaction was sent, the worker checks the chain from this block: a transfer to the freelancer marks the payout `paid`; a landed swap gets its transfer finished; nothing sent puts it back in the queue. While any payout cannot be settled this way it stays `processing`, its `error` says why, and no new payouts start. Run only one worker at a time
+  - `started_block` (number), the Celo block when processing began. After a crash, or an error that may have come after a transaction was sent, the worker checks the chain from this block: a transfer to the freelancer marks the payout `paid`; a landed swap gets its transfer finished; nothing sent puts it back in the queue. While any payout cannot be settled this way it stays `processing`, its `error` says why, and no new payouts start. Only one worker runs payouts at a time; see `worker_locks` below
+- [ ] PocketBase: add a `worker_locks` collection for the single-worker lease:
+  - `name` (text, unique index), `owner` (text), `heartbeat_at` (date)
+  - No API rules (superuser only). The worker holds the `payout-worker` row, refreshes it every check and before each payout, and deletes it on Ctrl+C. A second worker waits; it takes over only if the holder has not refreshed for 10 minutes
 - [ ] Hook on milestone approval → create a `payouts` record with status `queued`
 - [ ] Agent worker picks up `queued` payouts:
   1. Confirm the client's USD₮ has arrived (client wallet or GoWork escrow)
