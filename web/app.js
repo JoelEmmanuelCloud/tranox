@@ -1,3 +1,5 @@
+import { icon } from "./icons.js";
+
 const CHAIN_ID = "0xa4ec";
 const CELO = {
   chainId: CHAIN_ID,
@@ -7,19 +9,22 @@ const CELO = {
   blockExplorerUrls: ["https://celoscan.io"],
 };
 
-export const STATUS_TEXT = {
-  pending: "Waiting for approval",
-  waiting_funds: "Approved, waiting for client funds",
-  queued: "Approved, in the queue",
-  processing: "Converting and sending",
-  paid: "Paid",
-  failed: "Could not be paid",
+export const STATUS = {
+  pending: { text: "Awaiting approval", icon: "pen" },
+  waiting_funds: { text: "Waiting for funds", icon: "clock" },
+  queued: { text: "In the queue", icon: "clock" },
+  processing: { text: "Converting", icon: "swap" },
+  paid: { text: "Paid", icon: "check" },
+  failed: { text: "Needs attention", icon: "alert" },
 };
+
+export { icon };
 
 export function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(props)) {
     if (k === "class") node.className = v;
+    else if (k === "style") node.style.cssText = v;
     else if (k === "text") node.textContent = v;
     else if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
     else node.setAttribute(k, v);
@@ -50,11 +55,31 @@ export function money(n, max = 2) {
 }
 
 export function txLink(hash, text) {
-  return el("a", { href: "https://celoscan.io/tx/" + hash, target: "_blank", rel: "noopener", text: text || "View on Celoscan" });
+  return el("a", { class: "chip-link", href: "https://celoscan.io/tx/" + hash, target: "_blank", rel: "noopener" }, icon("receipt"), text || "View on Celoscan", icon("external"));
 }
 
-export function chip(status) {
-  return el("span", { class: "chip " + status, text: STATUS_TEXT[status] || status });
+export function pill(status) {
+  const s = STATUS[status] || { text: status, icon: "clock" };
+  return el("span", { class: "pill " + status }, icon(s.icon), s.text);
+}
+
+export function busyButton(button, label) {
+  const original = [...button.childNodes];
+  button.disabled = true;
+  button.setAttribute("aria-busy", "true");
+  button.replaceChildren(el("span", { class: "spinner", "aria-hidden": "true" }), label);
+  return () => {
+    button.disabled = false;
+    button.removeAttribute("aria-busy");
+    button.replaceChildren(...original);
+  };
+}
+
+export function notice(box, kind, text, ...extra) {
+  const name = kind === "ok" ? "check" : kind === "error" ? "alert" : kind === "warn" ? "clock" : "zap";
+  box.className = "notice " + kind;
+  box.setAttribute("role", kind === "error" ? "alert" : "status");
+  box.replaceChildren(icon(name), el("div", {}, text, ...extra));
 }
 
 export function wallet() {
