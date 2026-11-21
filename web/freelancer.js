@@ -43,19 +43,20 @@ function render(data) {
   for (const p of paid) if (p.payout && p.payout.received) totals[p.currency] = (totals[p.currency] || 0) + Number(p.payout.received);
   const totalText = Object.entries(totals).map(([c, v]) => money(v) + " " + c).join(" + ") || "0 " + (f.currency || "");
   const pending = data.payouts.filter((p) => p.status !== "paid" && p.status !== "failed").reduce((s, p) => s + p.amount_usdt, 0);
+  const fact = (ic, k, v) => el("div", { class: "fact" }, el("div", { class: "k" }, icon(ic), k), el("div", { class: "v tnum", text: v }));
   head.replaceChildren(
+    el("span", { class: "spotlight", "aria-hidden": "true" }),
     el("section", { class: "balance fade-in", "aria-label": "Your earnings" },
       el("div", { class: "label" }, icon("user"), "Hi " + f.name + ", you have received"),
       el("div", { class: "big tnum", text: totalText }),
       el("div", { class: "sub", text: paid.length + " of " + data.payouts.length + " payouts paid" + (pending ? " · " + money(pending) + " USD₮ on the way" : "") }),
+      el("div", { class: "facts", "aria-label": "Payout details" },
+        fact("globe", "You are paid in", f.currency || "Not set"),
+        fact("swap", "Today's rate", data.rate_per_usdt ? "1 USD₮ ≈ " + money(data.rate_per_usdt) + " " + f.currency : "Unavailable"),
+      ),
     ),
   );
-  const fact = (ic, k, v) => el("div", { class: "fact" }, el("div", { class: "k" }, icon(ic), k), el("div", { class: "v tnum", text: v }));
   app.replaceChildren(
-    el("section", { class: "panel facts fade-in", "aria-label": "Payout details" },
-      fact("globe", "You are paid in", f.currency || "Not set"),
-      fact("swap", "Today's rate", data.rate_per_usdt ? "1 USD₮ ≈ " + money(data.rate_per_usdt) + " " + f.currency : "Unavailable"),
-    ),
     el("div", { class: "list-title" }, el("h2", { text: "Payouts" }), el("span", { text: data.payouts.length + " total" })),
     ...(data.payouts.length
       ? data.payouts.map((p, i) => payoutCard(p, data.rate_per_usdt, f.currency, i))

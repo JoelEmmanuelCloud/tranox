@@ -105,23 +105,24 @@ function render() {
   const paidUsdt = job.milestones.filter((m) => m.status === "paid").reduce((s, m) => s + m.amount_usdt, 0);
   const paidCount = job.milestones.filter((m) => m.status === "paid").length;
   const pct = total ? Math.round((paidUsdt / total) * 100) : 0;
+  const fact = (ic, k, v) => el("div", { class: "fact" }, el("div", { class: "k" }, icon(ic), k), el("div", { class: "v tnum", text: v }));
   head.replaceChildren(
+    el("span", { class: "spotlight", "aria-hidden": "true" }),
     el("section", { class: "balance fade-in", "aria-label": "Job summary" },
       el("div", { class: "label" }, icon("receipt"), job.job.client + " · " + job.job.title),
       el("div", { class: "big tnum", text: money(total) + " USD₮" }),
       el("div", { class: "sub", text: paidCount + " of " + job.milestones.length + " milestones paid to " + f.name + (f.country ? " in " + f.country : "") }),
       el("div", { class: "meter", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(pct), "aria-label": "Paid so far" }, el("span", { style: "width:" + pct + "%" })),
       el("div", { class: "meter-label tnum" }, el("span", { text: money(paidUsdt) + " USD₮ paid" }), el("span", { text: money(total - paidUsdt) + " USD₮ to go" })),
+      el("div", { class: "facts", "aria-label": "Payment details" },
+        fact("globe", "Freelancer is paid in", f.currency || "Not set"),
+        fact("swap", "Today's rate", job.rate_per_usdt ? "1 USD₮ ≈ " + money(job.rate_per_usdt) + " " + f.currency : "Unavailable"),
+        fact("wallet", "Pay from", job.client_wallet ? short(job.client_wallet) : "No wallet set"),
+        fact("shield", "Tranox agent", short(job.agent_wallet)),
+      ),
     ),
   );
-  const fact = (ic, k, v) => el("div", { class: "fact" }, el("div", { class: "k" }, icon(ic), k), el("div", { class: "v tnum", text: v }));
   app.replaceChildren(
-    el("section", { class: "panel facts fade-in", "aria-label": "Payment details" },
-      fact("globe", "Freelancer is paid in", f.currency || "Not set"),
-      fact("swap", "Today's rate", job.rate_per_usdt ? "1 USD₮ ≈ " + money(job.rate_per_usdt) + " " + f.currency : "Unavailable"),
-      fact("wallet", "Pay from", job.client_wallet ? short(job.client_wallet) : "No wallet set"),
-      fact("shield", "Tranox agent", short(job.agent_wallet)),
-    ),
     el("div", { class: "list-title" }, el("h2", { text: "Milestones" }), el("span", { text: job.milestones.length + " total" })),
     ...(job.milestones.length ? job.milestones.map(milestoneCard) : [el("div", { class: "empty-state", text: "No milestones yet." })]),
   );
