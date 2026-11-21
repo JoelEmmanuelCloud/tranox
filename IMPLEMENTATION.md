@@ -209,6 +209,7 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 **Submission form fields** (`loops project fields --event agents-open-for-business` lists them with what is still missing):
 - Required: logo, project name, tagline (up to 250 characters), description, repository URL, walkthrough video URL, at least one screenshot, demo URL, agent wallet, ERC-8004 agent ID, Self Agent ID (mainnet agentId), attribution tag, payout wallet on Celo, named user, team contacts, founder or project X handles, follow @Celo and @CeloDevs
 - Optional: region, x402 PayTo address, buy transaction hashes, Stablecoin Corridors track details, public X post
+- The project cannot be created, even as a draft, until every required answer is in (team contacts, payout wallet, Self Agent ID, named user, X handles, follow confirmation)
 - Draft with `loops project create --event agents-open-for-business --name "Tranox" ...` without `--confirm` first, read the draft, then re-run with `--confirm`
 - Score it before submitting: `loops evaluate --event agents-open-for-business --sponsor stablecoin-corridors` (free)
 
