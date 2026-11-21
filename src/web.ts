@@ -13,6 +13,7 @@ const PAGES: Record<string, string> = { "/": "index.html", "/job": "job.html", "
 const ASSETS: Record<string, string> = {
   "/assets/styles.css": "text/css; charset=utf-8",
   "/assets/app.js": "text/javascript; charset=utf-8",
+  "/assets/icons.js": "text/javascript; charset=utf-8",
   "/assets/job.js": "text/javascript; charset=utf-8",
   "/assets/freelancer.js": "text/javascript; charset=utf-8",
 };
