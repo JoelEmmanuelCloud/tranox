@@ -6,7 +6,7 @@ import { env, PAYOUT_CURRENCIES, TOKENS, type PayoutCurrency } from "./config.js
 import { login, pb } from "./db.js";
 import { decimals } from "./erc20.js";
 import { preview } from "./textile.js";
-import { agent } from "./wallet.js";
+import { agent, publicClient } from "./wallet.js";
 
 const ID = /^[a-z0-9]{15}$/;
 const RATE_TTL_MS = 2 * 60_000;
@@ -59,6 +59,14 @@ function cachedRate(currency: PayoutCurrency): string | null {
   return null;
 }
 
+const TX_HASH = /^0x[0-9a-f]{64}$/;
+
+export async function txView(hash: string) {
+  if (!TX_HASH.test(hash)) throw new ViewError(400, "Invalid transaction hash");
+  const receipt = await publicClient.getTransactionReceipt({ hash: hash as `0x${string}` }).catch(() => null);
+  return { hash, status: receipt ? receipt.status : "pending" };
+}
+
 export async function rateView(currency: string) {
   const c = asCurrency(currency);
   if (!c) throw new ViewError(404, "Unknown currency");
@@ -99,6 +107,7 @@ export async function jobView(id: string) {
     client_wallet: job.client_wallet || null,
     agent_wallet: agent().address,
     usdt: TOKENS.USDT,
+    usdt_decimals: await decimals(TOKENS.USDT),
     data_suffix: toDataSuffix(env.tag()),
     rate_per_usdt: currency ? cachedRate(currency) : null,
     milestones: await Promise.all(
