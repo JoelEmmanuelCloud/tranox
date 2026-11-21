@@ -15,16 +15,17 @@ With Tranox the client pays in USD₮, and the freelancer receives their own cur
 ```mermaid
 sequenceDiagram
     participant C as Client wallet
-    participant P as Payment page
+    participant P as Job page
     participant DB as PocketBase
     participant A as Tranox agent
     participant T as Textile FX
     participant F as Freelancer wallet
 
-    C->>P: Opens /pay.html?m=<milestone>
+    C->>P: Opens /job?id=<job>
     P->>C: Asks to send USD₮ (tagged)
     C->>A: USD₮ transfer
-    DB->>DB: Milestone approved, payout queued
+    C->>P: Signs the approval when the work is done
+    P->>DB: Signature checked, milestone approved, payout queued
     A->>A: Checks the client's USD₮ arrived
     A->>T: Firm quote, approve, swap (tagged)
     T->>A: Local stablecoin
@@ -32,11 +33,12 @@ sequenceDiagram
     A->>DB: Saves the transaction hashes, marks paid
 ```
 
-1. Each job has the client's wallet (`client_wallet`). The client opens the milestone's payment link in MiniPay or any Celo wallet and pays USD₮ to the agent wallet. The page adds the attribution tag to the payment.
-2. When the milestone is approved in PocketBase, a hook queues a payout in the same database transaction. Approval is refused if the freelancer or job is missing a wallet.
-3. The worker (`npm run worker`) picks up the payout. It first checks on-chain that this client has sent enough USD₮ to cover it. If not, the payout waits.
-4. The worker gets a firm Textile FX quote, approves and swaps USD₮ into the freelancer's currency, then sends it to the freelancer. Every transaction carries the tag `celo_37620e33107f`.
-5. The transaction hashes are written back to the payout record.
+1. Each job has the client's wallet (`client_wallet`). The client opens the job page in MiniPay or any Celo wallet and pays each milestone in USD₮ to the agent wallet. The page adds the attribution tag to the payment.
+2. When the work is done, the client approves the milestone on the same page by signing a short message with that wallet (free, no transaction). The web server checks the signature belongs to the job's `client_wallet`, then marks the milestone approved, and a PocketBase hook queues a payout in the same database transaction. Approval is refused if the freelancer or job is missing a wallet.
+3. The freelancer follows every payout on their own page, with the amount in their currency and the transaction links.
+4. The worker (`npm run worker`) picks up the payout. It first checks on-chain that this client has sent enough USD₮ to cover it. If not, the payout waits.
+5. The worker gets a firm Textile FX quote, approves and swaps USD₮ into the freelancer's currency, then sends it to the freelancer. Every transaction carries the tag `celo_37620e33107f`.
+6. The transaction hashes are written back to the payout record.
 
 ## Safety rules
 
@@ -58,9 +60,10 @@ sequenceDiagram
 | `src/worker.ts` | Runs queued payouts, retries, and crash recovery |
 | `src/recover.ts`, `src/db.ts` | Works out from the chain what happened to a stuck payout |
 | `pocketbase/pb_migrations` | Database tables: freelancers, jobs, milestones, payouts, worker_locks |
-| `pocketbase/pb_hooks` | Queues a payout on approval; serves the payment page's data |
-| `pocketbase/pb_public/pay.html` | The client payment page |
-| `scripts/gate.ts` | Payment gate: lets only the payment page through to PocketBase |
+| `pocketbase/pb_hooks` | Queues a payout when a milestone is approved |
+| `src/web.ts`, `src/views.ts` | Public web server: the pages and the only data they can see |
+| `src/approval.ts` | The approval message and the client wallet signature check |
+| `web/` | Home page, client job page, freelancer payout page |
 | `scripts/` | Wallet, balances, quotes, agent registration, test payout |
 
 ## Run it
@@ -98,7 +101,7 @@ Main `.env` settings:
 Send the agent wallet, on the Celo network:
 
 - **About 0.5 CELO for gas.** At the gas price on 21 Nov 2026, registering the agent is estimated at about 0.05 CELO and one full payout (approve, swap, transfer) at about 0.09 CELO, with generous gas limits, so 0.5 CELO covers registration and about 5 payouts.
-- **1 USD₮ for a test payout, or none.** Real payouts are funded by the client through the payment link; the agent only spends its own USD₮ in `swap:test`. Textile quoted swaps as small as 1 USD₮ on 21 Nov.
+- **1 USD₮ for a test payout, or none.** Real payouts are funded by the client from the job page; the agent only spends its own USD₮ in `swap:test`. Textile quoted swaps as small as 1 USD₮ on 21 Nov.
 
 Then:
 
@@ -112,9 +115,10 @@ npm run quote -- 5        # live Textile FX prices and depth for every currency
 1. In the PocketBase admin (`http://127.0.0.1:8090/_/`), add a **freelancer** with their wallet and payout currency, and add that wallet to `FREELANCER_ALLOWLIST`.
 2. Add a **job** for that freelancer with the client's wallet in `client_wallet`.
 3. Add a **milestone** with the amount in USD₮. It starts as `pending`.
-4. Put the payment page online (see below) and send the client `https://<public address>/pay.html?m=<milestone id>`. They pay from that wallet. **Real money.**
-5. Set the milestone to `approved`. A payout appears in `payouts` as `queued`.
-6. Start the worker. **Real money.**
+4. Put the pages online (see below). Send the client `https://<public address>/job?id=<job id>` and the freelancer `https://<public address>/freelancer?id=<freelancer id>`.
+5. The client pays the milestone from that page with the job's wallet. **Real money.**
+6. When the work is done, the client presses **Approve milestone** and signs. A payout appears in `payouts` as `queued`.
+7. Start the worker. **Real money.**
 
    ```bash
    npm run worker
@@ -124,21 +128,28 @@ npm run quote -- 5        # live Textile FX prices and depth for every currency
 
 To test one payout without a client, `npm run swap:test -- <freelancer wallet> IDRX 1` converts 1 USD₮ from the agent's own funds and pays it out. Pick a currency that `npm run quote -- 1` shows with makers online. **Real money.**
 
-### Put the payment page online
+### Put the pages online
 
-Clients open the payment page from their phone, so it must be reachable from the internet. Never expose PocketBase itself: its admin page and records would be public. Instead, run the payment gate, which lets through only `/pay.html` and the page's data route (`/api/tranox/pay/<milestone id>`) and answers everything else with "not found".
+Clients and freelancers open their pages from their phones, so the pages must be reachable from the internet. Never expose PocketBase itself: its admin page and records would be public. Instead, run the Tranox web server (`npm run web`). It serves only the pages and four routes, keeps PocketBase private, and answers everything else with "not found":
+
+| Route | What it does |
+| --- | --- |
+| `GET /api/jobs/<id>` | The job page's data: milestones, statuses, today's rate, the wallets to pay from and to |
+| `GET /api/freelancers/<id>` | The freelancer page's data: payouts, local amounts, transaction links |
+| `POST /api/milestones/<id>/challenge` | The exact approval message to sign |
+| `POST /api/milestones/<id>/approve` | Checks the client's signature, then approves the milestone. Limited to 20 requests a minute per visitor |
 
 Run each in its own terminal:
 
 ```bash
 npm run pb       # PocketBase on 127.0.0.1:8090
-npm run gate     # payment gate on 127.0.0.1:8091
+npm run web      # Tranox pages on 127.0.0.1:8091
 cloudflared tunnel --url http://127.0.0.1:8091
 ```
 
-The last command needs [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) (on Windows: `winget install Cloudflare.cloudflared`). It prints a public address like `https://<random words>.trycloudflare.com`; payment links are that address plus `/pay.html?m=<milestone id>`.
+The last command needs [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) (on Windows: `winget install Cloudflare.cloudflared`). It prints a public address like `https://<random words>.trycloudflare.com`; page links are that address plus `/job?id=<job id>` or `/freelancer?id=<freelancer id>`, and the address alone is the home page.
 
-This free quick tunnel needs no account, but it is for testing: the address changes every time it restarts (links sent earlier stop working), and it only works while this computer runs all three commands. For a lasting address, run the same gate on a small always-on server, or use a named Cloudflare tunnel.
+This free quick tunnel needs no account, but it is for testing: the address changes every time it restarts (links sent earlier stop working), and it only works while this computer runs all three commands. For a lasting address, run the same web server on a small always-on server, or use a named Cloudflare tunnel.
 
 ### 4. Register the agent
 

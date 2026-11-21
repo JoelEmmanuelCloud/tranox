@@ -152,12 +152,13 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - Before a milestone payout starts, the worker adds up all USD₮ this client wallet has sent the agent wallet since its earliest `funded_since`. That total must cover this payout plus all of the client's `paid` and `processing` payouts. If not, the payout stays `queued`, its `error` says how much has arrived and how much is needed, and it is checked again every 2 minutes. It never gives up waiting for funds
   - When funds are confirmed the worker sets `funded_at`. The `MAX_QUEUE_HOURS` wait for liquidity counts from then, not from approval
   - `swap:test` payouts (`source = manual`) skip the check
-- [x] Client payment page (`pocketbase/pb_public/pay.html`), so the client's own payment carries our tag and counts as independent tagged activity
-  - Send the client `https://<pocketbase host>/pay.html?m=<milestone id>`. Open it in MiniPay or any browser with a Celo wallet
-  - The page reads the milestone from `GET /api/tranox/pay/{id}` (`pocketbase/pb_hooks/pay.pb.js`): job, milestone title, amount, status, client wallet, agent wallet, tag bytes. Nothing else is public
-  - It switches the wallet to Celo, refuses any wallet but the job's `client_wallet`, checks the USD₮ balance, then sends a USD₮ transfer to the agent wallet with the tag added. The worker's funds check picks it up from the chain
-  - `npm run pb` passes the agent wallet address and tag bytes to PocketBase from `.env`. Without a valid `AGENT_PRIVATE_KEY` the page says payments are not open yet
-  - The page only works for clients once PocketBase is reachable from the internet. Host it (or tunnel to it) before sending links
+- [x] Public pages (`npm run web`, `src/web.ts`, `src/views.ts`, `web/`), so the client's own payments carry our tag and count as independent tagged activity, and judges have something to see. Built 21 Nov; replaced the first single payment page
+  - Home page (`/`): what Tranox does and the agent's public record. This is the demo URL
+  - Client job page (`/job?id=<job id>`): each milestone with its amount, an estimate in the freelancer's currency at today's Textile rate, status and steps. **Pay** sends a tagged USD₮ transfer from the job's `client_wallet` only. **Approve milestone** asks the client to sign a short message (free); the server checks the signature belongs to `client_wallet` (`src/approval.ts`, valid 10 minutes, bound to the milestone, job and amount) and only then sets the milestone to approved, which fires the payout hook
+  - Freelancer page (`/freelancer?id=<freelancer id>`): total received, each payout's status, local amount and Celoscan links
+  - PocketBase stays private; the web server logs in as the superuser and shares only what the pages need. Internal payout errors are turned into plain statuses. Strict security headers, a fixed list of files, and a limit of 20 approval requests a minute per visitor
+  - Tested 21 Nov on a scratch database with real Celo reads: signatures from the wrong wallet, changed amounts, replays and expired approvals are refused; a fake browser wallet paid the exact tagged transfer and saw approval errors on screen. Not yet tried in MiniPay
+  - Clients can only use the pages once they are online: `npm run web` plus `cloudflared tunnel --url http://127.0.0.1:8091` (see README)
 - [ ] Agent worker picks up `queued` payouts:
   1. ~~Confirm the client's USD₮ has arrived~~ Done 20 Nov, see the funds check above
   2. Get a Textile quote into the freelancer's currency
