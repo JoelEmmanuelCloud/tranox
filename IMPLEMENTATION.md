@@ -13,6 +13,12 @@ Celo "Agents Open for Business" hackathon · build opens 20 Nov 2026 · **submis
 - At least one local-stablecoin payment that reaches someone outside the team
 - An ERC-8004 identity for the agent
 
+**What the judges look for, in their words** (from the Loops skill):
+- Execution: works on mainnet end to end, the repo is clear, and a judge can follow the README to reproduce the core flow
+- Value: one or two sentences on what the agent does, for whom, and why it beats how it is done today
+- Traction: tagged transactions from independent users during the event. Repeat use counts for more than one large payment
+- Named user: a person or business, the job done for them, and what it saves them in time or money
+
 **Other tracks considered:**
 - Self Agent ID (1st $700, 2nd $300): needs Self Agent ID plus x402 payments. Scored integration 30%, idea 30%, named user 25%, real use 15%. This is Step 5
 - Altana Agent Wallets (1st $750 + 25,000 XP, 2nd $250 + 10,000 XP): the agent spends from a user's Altana wallet under a capped, revocable session key. Skipped: it changes how the agent wallet works and clashes with one agent wallet for the whole event
@@ -52,7 +58,7 @@ Celo "Agents Open for Business" hackathon · build opens 20 Nov 2026 · **submis
 - [x] Save the attribution tag in `.env`: `CELO_ATTRIBUTION_TAG=celo_37620e33107f`
   - Lost it? Event page, the Celo button in the playground, or `loops project get`
   - Joining a team switches you to the team's tag — decide before sending any transactions
-- [ ] Install the Loops agent skill in the repo (needs Node 20.12+, 22 LTS recommended):
+- [x] Install the Loops agent skill (done 21 Nov, installed globally, not in the repo; signed in with `loops auth login --email`, as Google sign-in from the CLI lands on loops.house instead of returning to the CLI):
 
 ```bash
 node -v            # nvm use 22 if older
@@ -78,7 +84,7 @@ const TAG = toDataSuffix(process.env.CELO_ATTRIBUTION_TAG!);
   - Celo mainnet: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
   - `register(agentURI)` → agent card JSON with name, description, payout endpoint
 - [ ] Add the agent wallet in the playground (**ADD WALLET**) — keep the same wallet for the whole event; your score is tied to it
-- [ ] (Recommended) Register with **Self Agent ID** (human-backed identity)
+- [ ] Register with **Self Agent ID** (human-backed identity). **Required by the submission form** (field "Self Agent ID (mainnet agentId)"), even though the event page only recommends it. Needs a one-time passport scan in the Self app: https://docs.self.xyz/docs/agent-id/overview/
 
 ## Step 2 — Recruit real users (21–30 Nov, in parallel)
 
@@ -192,6 +198,13 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - [ ] Follow @Celo and @CeloDevs on X (required)
 - [ ] Self-evaluate with the Loops skill: "Evaluate my project against the Stablecoin Corridors judging criteria" — fix gaps before submitting
 - [ ] Submit on Loops House a day before the 7 Dec 09:00 GMT close
+- [ ] After the first tagged swap, open the Celo checklist on https://www.loops.house/agents-open-for-business/playground/submit and press **Find it**; Loops scans the agent wallet for it
+
+**Submission form fields** (`loops project fields --event agents-open-for-business` lists them with what is still missing):
+- Required: logo, project name, tagline (up to 250 characters), description, agent wallet, ERC-8004 agent ID, Self Agent ID (mainnet agentId), attribution tag, payout wallet on Celo, named user, team contacts, founder or project X handles, follow @Celo and @CeloDevs
+- Optional: region, x402 PayTo address, buy transaction hashes, Stablecoin Corridors track details, public X post
+- Draft with `loops project create --event agents-open-for-business --name "Tranox" ...` without `--confirm` first, read the draft, then re-run with `--confirm`
+- Score it before submitting: `loops evaluate --event agents-open-for-business --sponsor stablecoin-corridors` (free)
 
 ---
 
