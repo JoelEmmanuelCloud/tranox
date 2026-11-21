@@ -1,32 +1,130 @@
 # Tranox
 
-Pays GoWork freelancers in their **local stablecoin** on Celo. A client pays a milestone in USD₮; the agent converts it on **Textile FX** and sends the freelancer cNGN, IDRX, wARS, wBRL, wMXN or wCOP. Every transaction carries the Celo attribution tag.
+Tranox is an agent that pays freelancers in their own local currency on Celo. A client pays a job milestone in dollars (USD₮); Tranox converts it on Textile FX and sends the freelancer naira, rupiah, pesos or reais as a stablecoin (cNGN, IDRX, wARS, wMXN, wCOP or wBRL), straight to their phone wallet.
 
-Built for Celo's **Agents Open for Business** hackathon (Stablecoin Corridors track).
+Built for Celo's Agents Open for Business hackathon, Stablecoin Corridors track.
 
-## Flow
+## The problem
 
-1. Client opens the milestone's payment link (`/pay.html?m=<milestone id>`) in MiniPay or another Celo wallet and pays USD₮ to the agent from the `client_wallet` saved on the job. The payment carries the attribution tag. The worker waits until the client's total covers the milestone
-2. A milestone is approved in PocketBase → the hook queues a `payouts` record in the same transaction
-3. Agent gets a firm Textile FX quote, approves and swaps (tagged)
-4. Agent transfers the local stablecoin to the freelancer (tagged) and writes tx hashes back
+A freelancer in Lagos or Jakarta who works for a client abroad usually gets paid in dollars through a bank wire or a payout platform. The money takes days to arrive, fees come off at each step, and then they still have to change dollars into the money they spend.
 
-## Setup
+With Tranox the client pays in USD₮, and the freelancer receives their own currency in MiniPay or Valora a few minutes after the milestone is approved. The conversion happens on-chain at a firm Textile FX quote, and every step has a public transaction link.
+
+## How it works
+
+```mermaid
+sequenceDiagram
+    participant C as Client wallet
+    participant P as Payment page
+    participant DB as PocketBase
+    participant A as Tranox agent
+    participant T as Textile FX
+    participant F as Freelancer wallet
+
+    C->>P: Opens /pay.html?m=<milestone>
+    P->>C: Asks to send USD₮ (tagged)
+    C->>A: USD₮ transfer
+    DB->>DB: Milestone approved, payout queued
+    A->>A: Checks the client's USD₮ arrived
+    A->>T: Firm quote, approve, swap (tagged)
+    T->>A: Local stablecoin
+    A->>F: Local stablecoin transfer (tagged)
+    A->>DB: Saves the transaction hashes, marks paid
+```
+
+1. Each job has the client's wallet (`client_wallet`). The client opens the milestone's payment link in MiniPay or any Celo wallet and pays USD₮ to the agent wallet. The page adds the attribution tag to the payment.
+2. When the milestone is approved in PocketBase, a hook queues a payout in the same database transaction. Approval is refused if the freelancer or job is missing a wallet.
+3. The worker (`npm run worker`) picks up the payout. It first checks on-chain that this client has sent enough USD₮ to cover it. If not, the payout waits.
+4. The worker gets a firm Textile FX quote, approves and swaps USD₮ into the freelancer's currency, then sends it to the freelancer. Every transaction carries the tag `celo_37620e33107f`.
+5. The transaction hashes are written back to the payout record.
+
+## Safety rules
+
+- **Only known wallets get paid.** Freelancer wallets must be on `FREELANCER_ALLOWLIST` in `.env`, added after confirming each wallet with the freelancer directly. A changed profile in the database cannot redirect a payout.
+- **No payout without the client's money.** A milestone payout starts only when the client's wallet has sent the agent enough USD₮ for it and all of that client's earlier payouts.
+- **Spending limits.** `MAX_PAYOUT_USDT` per payout and `MAX_DAILY_USDT` per UTC day, counted from the chain and the database, so restarts do not reset them.
+- **Safe after a crash.** Each payout records the block where it started. After a crash the worker checks the chain: a finished transfer marks it paid, a finished swap gets its transfer sent, and nothing sent puts it back in the queue. New payouts wait until every stuck one is settled.
+- **One worker at a time.** A lock in PocketBase stops two workers paying the same payout.
+- **Retries that follow Textile's docs.** No quote, an expired quote, a swap rejected on-chain, and Textile errors 429, 500, 502 and 503 are retried. A payout gives up after `MAX_QUEUE_HOURS`, or after 3 rejected swaps.
+
+## Code layout
+
+| Path | What it does |
+| --- | --- |
+| `src/wallet.ts` | The only place transactions are sent; adds the attribution tag to every one |
+| `src/textile.ts` | Textile FX quotes, approval, swap and reporting the swap back |
+| `src/payout.ts` | Converts and pays one payout, with the spending limits and allowlist |
+| `src/funding.ts` | Checks the client's USD₮ has arrived |
+| `src/worker.ts` | Runs queued payouts, retries, and crash recovery |
+| `src/recover.ts`, `src/db.ts` | Works out from the chain what happened to a stuck payout |
+| `pocketbase/pb_migrations` | Database tables: freelancers, jobs, milestones, payouts, worker_locks |
+| `pocketbase/pb_hooks` | Queues a payout on approval; serves the payment page's data |
+| `pocketbase/pb_public/pay.html` | The client payment page |
+| `scripts/` | Wallet, balances, quotes, agent registration, test payout |
+
+## Run it
+
+You need Node 22 and [PocketBase 0.40.6](https://github.com/pocketbase/pocketbase/releases) for your system. Everything runs on Celo mainnet, so steps marked **real money** spend real funds.
+
+### 1. Install and configure
 
 ```bash
 npm install
 cp .env.example .env
-# PocketBase: unzip v0.40.6 for your OS into pocketbase/bin, then
-npm run pb -- superuser upsert <email> <password>   # put the same pair in .env
-npm run pb                  # http://127.0.0.1:8090/_/ applies migrations and hooks
-npm run wallet:new          # paste AGENT_PRIVATE_KEY into .env
-npm run balances            # after funding with CELO + USD₮
-npm run quote -- 10         # indicative prices for every corridor
-npm run register:agent      # ERC-8004 identity (host agent-card.json first)
-npm run swap:test -- <wallet> cNGN 5   # REAL mainnet payout, recorded in PocketBase
-npm run swap:test -- <wallet> cNGN 5 --standalone   # before PocketBase exists, with no worker running
-npm run worker              # process queued GoWork payouts
+npm run wallet:new        # prints a new agent key; put it in .env as AGENT_PRIVATE_KEY
 ```
+
+Unzip PocketBase into `pocketbase/bin`, then create a database admin and put the same email and password in `.env`:
+
+```bash
+npm run pb -- superuser upsert <email> <password>
+npm run pb                # starts PocketBase on http://127.0.0.1:8090 and applies the tables and hooks
+```
+
+Main `.env` settings:
+
+| Setting | Meaning |
+| --- | --- |
+| `AGENT_PRIVATE_KEY` | The agent wallet key. Never share or commit it |
+| `CELO_ATTRIBUTION_TAG` | `celo_37620e33107f` |
+| `FREELANCER_ALLOWLIST` | Comma-separated freelancer wallets allowed to receive payouts. Empty means no payouts |
+| `MAX_PAYOUT_USDT`, `MAX_DAILY_USDT` | Spending limits in USD₮ |
+| `MAX_QUEUE_HOURS` | How long a payout may wait for liquidity before it fails |
+| `POCKETBASE_URL`, `POCKETBASE_ADMIN_EMAIL`, `POCKETBASE_ADMIN_PASSWORD` | Database connection |
+
+### 2. Fund the agent and check prices
+
+Send the agent wallet a little CELO for gas and some USD₮, then:
+
+```bash
+npm run balances          # agent wallet balances
+npm run quote -- 5        # live Textile FX prices and depth for every currency
+```
+
+### 3. Pay a milestone
+
+1. In the PocketBase admin (`http://127.0.0.1:8090/_/`), add a **freelancer** with their wallet and payout currency, and add that wallet to `FREELANCER_ALLOWLIST`.
+2. Add a **job** for that freelancer with the client's wallet in `client_wallet`.
+3. Add a **milestone** with the amount in USD₮. It starts as `pending`.
+4. Send the client `http://<your PocketBase host>/pay.html?m=<milestone id>`. They pay from that wallet. **Real money.** PocketBase must be reachable from the internet for this.
+5. Set the milestone to `approved`. A payout appears in `payouts` as `queued`.
+6. Start the worker. **Real money.**
+
+   ```bash
+   npm run worker
+   ```
+
+   The payout moves to `paid` with the swap and payout transaction hashes. Until the client's USD₮ arrives, its `error` field says how much is still needed.
+
+To test one payout without a client, `npm run swap:test -- <freelancer wallet> cNGN 5` converts 5 USD₮ from the agent's own funds and pays it out. **Real money.**
+
+### 4. Register the agent
+
+Host `agent-card.json` at a public URL, set `AGENT_CARD_URI` in `.env`, then run `npm run register:agent` to register on the ERC-8004 identity registry. **Real money** (gas only).
+
+## Liquidity
+
+Textile FX depth changes with the makers online. On 20 Nov 2026, for 5 USD₮: cNGN and IDRX had over 40,000 USD₮ of depth, wBRL about 9.80 and wCOP about 7.66, wARS had no valid quote and wMXN had no makers online. Run `npm run quote -- <amount>` before paying in a thin currency; the worker also checks depth and waits if there is not enough.
 
 ## Celo mainnet addresses
 
@@ -45,6 +143,7 @@ npm run worker              # process queued GoWork payouts
 ## Hackathon details
 
 - Attribution tag: `celo_37620e33107f`
-- Agent wallet: _TBD_
-- ERC-8004 agent ID: _TBD_
-- Tagged txs: _links go here_
+- Agent wallet: not created yet
+- ERC-8004 agent ID: not registered yet
+- Self Agent ID: not registered yet
+- Tagged transactions: none yet; Celoscan links will be listed here
