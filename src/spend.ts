@@ -51,6 +51,32 @@ export async function firstBlockAtOrAfter(timestampSec: bigint): Promise<bigint>
   return lo;
 }
 
+const inflows = new Map<string, { nextBlock: bigint; total: bigint }>();
+
+export async function receivedSince(token: Address, from: Address, to: Address, sinceMs: number): Promise<bigint> {
+  const t = getAddress(token);
+  const f = getAddress(from);
+  const r = getAddress(to);
+  const key = `${t}:${f}:${r}:${sinceMs}`;
+  let c = inflows.get(key);
+  if (!c) {
+    c = { nextBlock: await firstBlockAtOrAfter(BigInt(Math.floor(sinceMs / 1000))), total: 0n };
+    inflows.set(key, c);
+  }
+  const state = c;
+  const latest = await publicClient.getBlockNumber();
+  await scanBlocks(
+    state.nextBlock,
+    latest,
+    (fromBlock, toBlock) => publicClient.getLogs({ address: t, event: transferEvent, args: { from: f, to: r }, fromBlock, toBlock }),
+    (logs, upTo) => {
+      state.total += logs.reduce((sum, l) => sum + (l.args.value ?? 0n), 0n);
+      state.nextBlock = upTo + 1n;
+    },
+  );
+  return state.total;
+}
+
 export async function sentSince(token: Address, owner: Address, sinceMs: number): Promise<bigint> {
   const t = getAddress(token);
   const o = getAddress(owner);
