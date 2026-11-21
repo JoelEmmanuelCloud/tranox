@@ -1,6 +1,6 @@
 import { erc20Abi, getAddress, toHex, type Address, type Hex } from "viem";
 import { CHAIN_ID, env } from "./config.js";
-import { agent, publicClient, sendTagged } from "./wallet.js";
+import { agent, publicClient, sendTagged, TxReverted } from "./wallet.js";
 
 type PreparedTx = { to: Address; data: Hex; value: string; chainId: number };
 
@@ -56,6 +56,7 @@ export class TextileError extends Error {
     readonly reason: string | undefined,
     readonly requestId: string | undefined,
     message: string,
+    readonly retryAfterMs?: number,
   ) {
     super(`Textile ${path} ${httpStatus} ${code}${reason ? `/${reason}` : ""}: ${message}${requestId ? ` (request ${requestId})` : ""}`);
   }
@@ -67,6 +68,23 @@ export class RetryLater extends Error {
   }
 }
 
+export class SwapReverted extends RetryLater {}
+
+const TRANSIENT_STATUS = new Set([0, 429, 500, 502, 503]);
+
+export function isTransient(e: unknown): e is TextileError {
+  return e instanceof TextileError && TRANSIENT_STATUS.has(e.httpStatus);
+}
+
+function retryAfterHeader(res: Response): number | undefined {
+  const v = res.headers.get("retry-after");
+  if (!v) return undefined;
+  const secs = Number(v);
+  if (Number.isFinite(secs) && secs >= 0) return secs * 1000;
+  const at = Date.parse(v);
+  return Number.isNaN(at) ? undefined : Math.max(0, at - Date.now());
+}
+
 function headers(extra: Record<string, string> = {}): Record<string, string> {
   const h: Record<string, string> = { "content-type": "application/json", ...extra };
   if (env.textileKey) h.authorization = `Bearer ${env.textileKey}`;
@@ -74,13 +92,20 @@ function headers(extra: Record<string, string> = {}): Record<string, string> {
 }
 
 async function post<T>(path: string, body: unknown, extraHeaders?: Record<string, string>, timeoutMs = 75_000): Promise<T> {
-  const res = await fetch(`${env.textileUrl}${path}`, {
-    method: "POST",
-    headers: headers(extraHeaders),
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  const text = await res.text();
+  let res: Response;
+  let text: string;
+  try {
+    res = await fetch(`${env.textileUrl}${path}`, {
+      method: "POST",
+      headers: headers(extraHeaders),
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    text = await res.text();
+  } catch (e) {
+    const timedOut = e instanceof Error && e.name === "TimeoutError";
+    throw new TextileError(path, 0, timedOut ? "timeout" : "network", undefined, undefined, e instanceof Error ? e.message : String(e));
+  }
   let json: any;
   try {
     json = text ? JSON.parse(text) : {};
@@ -89,7 +114,15 @@ async function post<T>(path: string, body: unknown, extraHeaders?: Record<string
   }
   if (!res.ok) {
     const e = json.error ?? {};
-    throw new TextileError(path, res.status, e.code ?? "unknown", e.details?.reason, e.request_id ?? res.headers.get("x-request-id") ?? undefined, e.message ?? text.slice(0, 300));
+    throw new TextileError(
+      path,
+      res.status,
+      e.code ?? "unknown",
+      e.details?.reason,
+      e.request_id ?? res.headers.get("x-request-id") ?? undefined,
+      e.message ?? text.slice(0, 300),
+      res.status === 429 ? retryAfterHeader(res) : undefined,
+    );
   }
   if (!json.data) throw new TextileError(path, res.status, "invalid_response", undefined, undefined, "response has no data field");
   return json.data as T;
@@ -189,7 +222,13 @@ export async function swap(p: SwapParams): Promise<{ quote: FirmQuote; swapTx: H
   }
 
   const s = q.transactions.swap;
-  const swapTx = await sendTagged({ to: s.to, data: s.data, value: BigInt(s.value || "0") });
+  let swapTx: Hex;
+  try {
+    swapTx = await sendTagged({ to: s.to, data: s.data, value: BigInt(s.value || "0") });
+  } catch (e) {
+    if (e instanceof TxReverted) throw new SwapReverted(`Swap ${e.hash} for quote ${q.rfqId} reverted on-chain, nothing was swapped; re-request`);
+    throw e;
+  }
 
   await submitHash(q, swapTx).catch((e) =>
     console.error(`swap ${swapTx} landed but reporting it to Textile failed:`, e instanceof Error ? e.message : e),

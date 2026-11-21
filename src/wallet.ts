@@ -15,6 +15,12 @@ import { privateKeyToAccount } from "viem/accounts";
 import { celo } from "viem/chains";
 import { env } from "./config.js";
 
+export class TxReverted extends Error {
+  constructor(readonly hash: Hex) {
+    super(`Tx reverted: ${hash}`);
+  }
+}
+
 export const publicClient = createPublicClient({ chain: celo, transport: http(env.rpcUrl) });
 
 let signer: { account: PrivateKeyAccount; walletClient: WalletClient } | undefined;
@@ -45,7 +51,7 @@ export async function sendTagged(tx: { to: Address; data?: Hex; value?: bigint }
     value: tx.value ?? 0n,
   });
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
-  if (receipt.status !== "success") throw new Error(`Tx reverted: ${hash}`);
+  if (receipt.status !== "success") throw new TxReverted(hash);
   return hash;
 }
 
