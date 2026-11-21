@@ -25,6 +25,8 @@ let dayKey = new Date().toISOString().slice(0, 10);
 
 export class DailyCapReached extends RetryLater {}
 
+const MIN_SWAP_USDT = 1;
+
 function msUntilNextUtcDay(now = new Date()): number {
   return utcDayStart(now).getTime() + 86_400_000 - now.getTime();
 }
@@ -43,6 +45,7 @@ async function checkGuardrails(amountUsdt: number) {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== dayKey) { dayKey = today; spentToday = 0; }
   if (!Number.isFinite(amountUsdt) || amountUsdt <= 0) throw new Error(`Payout amount must be a positive number, got ${amountUsdt}`);
+  if (amountUsdt < MIN_SWAP_USDT) throw new Error(`Payout ${amountUsdt} USDT is below Textile's ${MIN_SWAP_USDT} USDT minimum swap`);
   if (amountUsdt > env.maxPayoutUsdt) throw new Error(`Payout ${amountUsdt} exceeds per-payout cap ${env.maxPayoutUsdt}`);
   if (amountUsdt > env.maxDailyUsdt) throw new Error(`Payout ${amountUsdt} exceeds daily cap ${env.maxDailyUsdt} and can never be sent`);
   const onChain = Number(formatUnits(await sentSince(TOKENS.USDT, agent().address, utcDayStart().getTime()), await decimals(TOKENS.USDT)));
