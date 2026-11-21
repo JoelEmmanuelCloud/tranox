@@ -7,7 +7,7 @@ function req(name: string): string {
   return v;
 }
 
-export const CHAIN_ID = 42220; // Celo mainnet — only mainnet activity counts
+export const CHAIN_ID = 42220;
 
 export const env = {
   rpcUrl: process.env.CELO_RPC_URL ?? "https://forno.celo.org",
@@ -17,13 +17,13 @@ export const env = {
   textileKey: process.env.TEXTILE_API_KEY || undefined,
   maxPayoutUsdt: Number(process.env.MAX_PAYOUT_USDT ?? 100),
   maxDailyUsdt: Number(process.env.MAX_DAILY_USDT ?? 300),
+  maxQueueHours: Number(process.env.MAX_QUEUE_HOURS ?? 24),
   pbUrl: process.env.POCKETBASE_URL ?? "http://127.0.0.1:8090",
   pbEmail: process.env.POCKETBASE_ADMIN_EMAIL ?? "",
   pbPassword: process.env.POCKETBASE_ADMIN_PASSWORD ?? "",
   agentCardUri: process.env.AGENT_CARD_URI ?? "",
 };
 
-// Celo mainnet token addresses (from the hackathon brief)
 export const TOKENS = {
   USDT: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
   cNGN: "0xF6829D7393dAe24509eb1E52eE8e572e2E271a4f",
@@ -36,7 +36,6 @@ export const TOKENS = {
 
 export type TokenSymbol = keyof typeof TOKENS;
 
-// Corridors that count for the Stablecoin Corridors track (USD₮ <-> local)
 export const PAYOUT_CURRENCIES = ["cNGN", "IDRX", "wARS", "wBRL", "wMXN", "wCOP"] as const;
 export type PayoutCurrency = (typeof PAYOUT_CURRENCIES)[number];
 

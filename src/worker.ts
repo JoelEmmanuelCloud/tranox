@@ -1,29 +1,38 @@
-/**
- * Polls GoWork's PocketBase `payouts` collection for queued payouts and executes them.
- *
- * Expected collection `payouts`:
- *   job (relation), freelancer (relation), freelancer_wallet (text), currency (select: cNGN|IDRX|wARS|wBRL|wMXN|wCOP),
- *   amount_usdt (number), status (select: queued|processing|paid|failed),
- *   rfq_id, approval_tx, swap_tx, payout_tx, received_units, error (text)
- *
- * A PocketBase hook on milestone approval should create a `queued` record.
- */
 import PocketBase from "pocketbase";
 import type { Address } from "viem";
 import { env, type PayoutCurrency } from "./config.js";
 import { executePayout } from "./payout.js";
+import { RetryLater, TextileError } from "./textile.js";
 
 const pb = new PocketBase(env.pbUrl);
 const POLL_MS = 15_000;
+const DEFAULT_RETRY_MS = 60_000;
+
+const nextAttempt = new Map<string, number>();
+const firstSeen = new Map<string, number>();
 
 async function login() {
-  // pocketbase >=0.23 uses pb.collection("_superusers").authWithPassword
   await (pb as any).admins.authWithPassword(env.pbEmail, env.pbPassword);
+}
+
+function retryDelay(e: unknown): number | undefined {
+  if (e instanceof RetryLater) return e.retryAfterMs ?? DEFAULT_RETRY_MS;
+  if (e instanceof TextileError && e.httpStatus === 429) return DEFAULT_RETRY_MS;
+  return undefined;
+}
+
+function queuedSince(rec: { id: string; created?: string }): number {
+  const created = rec.created ? Date.parse(rec.created) : NaN;
+  if (!Number.isNaN(created)) return created;
+  if (!firstSeen.has(rec.id)) firstSeen.set(rec.id, Date.now());
+  return firstSeen.get(rec.id)!;
 }
 
 async function tick() {
   const queued = await pb.collection("payouts").getFullList({ filter: 'status = "queued"', sort: "created" });
+  const now = Date.now();
   for (const rec of queued) {
+    if ((nextAttempt.get(rec.id) ?? 0) > now) continue;
     await pb.collection("payouts").update(rec.id, { status: "processing" });
     try {
       const r = await executePayout({
@@ -41,13 +50,24 @@ async function tick() {
         received_units: r.received.toString(),
         error: "",
       });
+      nextAttempt.delete(rec.id);
+      firstSeen.delete(rec.id);
       console.log(`paid ${rec.id}: swap ${r.swapTx} payout ${r.payoutTx}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      // no_quote / expired quotes go back to the queue; everything else fails loudly
-      const retry = /No quote|expired/i.test(msg);
-      await pb.collection("payouts").update(rec.id, { status: retry ? "queued" : "failed", error: msg });
-      console.error(`payout ${rec.id} ${retry ? "requeued" : "failed"}: ${msg}`);
+      const delay = retryDelay(e);
+      const waitedHours = (Date.now() - queuedSince(rec)) / 3_600_000;
+      if (delay !== undefined && waitedHours < env.maxQueueHours) {
+        nextAttempt.set(rec.id, Date.now() + delay);
+        await pb.collection("payouts").update(rec.id, { status: "queued", error: msg });
+        console.error(`payout ${rec.id} requeued, next try in ${Math.round(delay / 1000)}s: ${msg}`);
+      } else {
+        nextAttempt.delete(rec.id);
+        firstSeen.delete(rec.id);
+        const reason = delay !== undefined ? `Gave up after ${env.maxQueueHours}h waiting: ${msg}` : msg;
+        await pb.collection("payouts").update(rec.id, { status: "failed", error: reason });
+        console.error(`payout ${rec.id} failed: ${reason}`);
+      }
     }
   }
 }
