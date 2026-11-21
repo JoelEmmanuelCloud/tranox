@@ -103,3 +103,13 @@ export async function executePayout(p: PayoutRequest): Promise<PayoutResult> {
 
   return { approvalTx, swapTx, payoutTx, rfqId: quote.rfqId, received };
 }
+
+export async function finishPayout(p: Pick<PayoutRequest, "freelancerWallet" | "currency">, received: bigint): Promise<Hex> {
+  if (!PAYOUT_CURRENCIES.includes(p.currency)) throw new Error(`Unsupported currency ${p.currency}`);
+  if (received <= 0n) throw new Error("Nothing to send: received amount is zero");
+  const to = checkRecipient(p.freelancerWallet);
+  const target = TOKENS[p.currency];
+  const held = await balanceOf(target);
+  if (held < received) throw new Error(`Agent holds ${held} ${p.currency} units, needs ${received} to finish this payout`);
+  return transferTagged(target, to, received);
+}
