@@ -1,0 +1,28 @@
+{
+  "name": "tranox",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tranox: pays GoWork freelancers in local stablecoins on Celo via Textile FX",
+  "type": "module",
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "wallet:new": "tsx scripts/new-wallet.ts",
+    "balances": "tsx scripts/balances.ts",
+    "register:agent": "tsx scripts/register-agent.ts",
+    "quote": "tsx scripts/quote.ts",
+    "swap:test": "tsx scripts/swap-test.ts",
+    "worker": "tsx src/worker.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@celo/attribution-tags": "^0.5.0",
+    "dotenv": "^16.4.5",
+    "pocketbase": "^0.21.5",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
