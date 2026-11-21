@@ -1,12 +1,14 @@
 import type { Address } from "viem";
 import { env, type PayoutCurrency } from "./config.js";
 import { lease, login, pb, resolveOnChain } from "./db.js";
+import { checkFunding } from "./funding.js";
 import { DailyCapReached, executePayout, syncSpentToday, utcDayStart } from "./payout.js";
 import { RetryLater, TextileError } from "./textile.js";
 import { publicClient } from "./wallet.js";
 
 const POLL_MS = 15_000;
 const DEFAULT_RETRY_MS = 60_000;
+const FUNDING_RETRY_MS = 2 * 60_000;
 
 const nextAttempt = new Map<string, number>();
 const firstSeen = new Map<string, number>();
@@ -20,7 +22,9 @@ function retryDelay(e: unknown): number | undefined {
   return undefined;
 }
 
-function queuedSince(rec: { id: string; created?: string }): number {
+function queuedSince(rec: { id: string; created?: string; funded_at?: string }): number {
+  const funded = rec.funded_at ? Date.parse(rec.funded_at) : NaN;
+  if (!Number.isNaN(funded)) return funded;
   const created = rec.created ? Date.parse(rec.created) : NaN;
   if (!Number.isNaN(created)) return created;
   if (!firstSeen.has(rec.id)) firstSeen.set(rec.id, Date.now());
@@ -69,6 +73,23 @@ async function tick() {
   for (const rec of queued) {
     if ((nextAttempt.get(rec.id) ?? 0) > now) continue;
     if (stopping || !(await lease.hold())) return;
+    const funding = await checkFunding(rec);
+    if (funding.kind === "refuse") {
+      forget(rec.id);
+      await pb.collection("payouts").update(rec.id, { status: "failed", error: funding.reason });
+      console.error(`payout ${rec.id} failed: ${funding.reason}`);
+      continue;
+    }
+    if (funding.kind === "wait") {
+      nextAttempt.set(rec.id, Date.now() + FUNDING_RETRY_MS);
+      if (rec.error !== funding.reason) await pb.collection("payouts").update(rec.id, { error: funding.reason });
+      console.log(`payout ${rec.id}: ${funding.reason}`);
+      continue;
+    }
+    if (!rec.funded_at && rec.source === "milestone") {
+      rec.funded_at = new Date().toISOString();
+      await pb.collection("payouts").update(rec.id, { funded_at: rec.funded_at });
+    }
     const startedBlock = await publicClient.getBlockNumber();
     await pb.collection("payouts").update(rec.id, { status: "processing", started_block: Number(startedBlock) });
     try {
