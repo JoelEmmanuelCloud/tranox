@@ -49,6 +49,7 @@ img, svg { display: block; }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; }
 .logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; letter-spacing: -.02em; text-decoration: none; color: #fff; }
 .logo-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, var(--gold-soft), var(--gold)); color: var(--gold-ink); box-shadow: 0 6px 18px rgba(245, 176, 20, .35); }
+.logo-img { width: 34px; height: 34px; border-radius: 10px; box-shadow: 0 6px 18px rgba(245, 176, 20, .35); }
 .logo-mark svg { width: 20px; height: 20px; stroke: var(--gold-ink); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .badge-live { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 600; color: #e2e8f0; background: rgba(255, 255, 255, .06); border: 1px solid var(--line-dark); padding: 6px 12px; border-radius: 999px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 4px rgba(52, 211, 153, .18); }

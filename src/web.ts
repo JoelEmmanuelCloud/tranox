@@ -17,6 +17,13 @@ const ASSETS: Record<string, string> = {
   "/assets/job.js": "text/javascript; charset=utf-8",
   "/assets/freelancer.js": "text/javascript; charset=utf-8",
 };
+const IMAGES: Record<string, string> = {
+  "/favicon.png": "image/png",
+  "/icon-192.png": "image/png",
+  "/logo.png": "image/png",
+  "/og.jpg": "image/jpeg",
+};
+const HOST = /^[a-z0-9.-]{1,253}(:\d{1,5})?$/i;
 const HEADERS: Record<string, string> = {
   "content-security-policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   "x-content-type-options": "nosniff",
@@ -32,6 +39,13 @@ function send(res: ServerResponse, status: number, type: string, body: string | 
 
 function json(res: ServerResponse, status: number, data: unknown) {
   send(res, status, "application/json; charset=utf-8", JSON.stringify(data));
+}
+
+function origin(req: IncomingMessage): string {
+  const host = req.headers.host ?? "";
+  if (!HOST.test(host)) return "";
+  const local = /^(127\.0\.0\.1|localhost)(:\d+)?$/i.test(host);
+  return (local ? "http://" : "https://") + host;
 }
 
 function clientIp(req: IncomingMessage): string {
@@ -69,7 +83,11 @@ async function route(req: IncomingMessage, res: ServerResponse) {
   const method = req.method ?? "GET";
 
   if (method === "GET" || method === "HEAD") {
-    if (PAGES[path]) return send(res, 200, "text/html; charset=utf-8", await readFile(join(ROOT, PAGES[path])));
+    if (PAGES[path]) {
+      const html = (await readFile(join(ROOT, PAGES[path]), "utf8")).replaceAll("__ORIGIN__", origin(req));
+      return send(res, 200, "text/html; charset=utf-8", html);
+    }
+    if (IMAGES[path]) return send(res, 200, IMAGES[path], await readFile(join(ROOT, path.slice(1))));
     if (ASSETS[path]) return send(res, 200, ASSETS[path], await readFile(join(ROOT, path.slice("/assets/".length))));
     let m = path.match(/^\/api\/jobs\/([a-z0-9]{15})$/);
     if (m) return json(res, 200, await jobView(m[1]));
