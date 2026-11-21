@@ -3,15 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b16">
 <title>Job - Tranox</title>
 <link rel="stylesheet" href="/assets/styles.css">
 <script type="module" src="/assets/job.js"></script>
 </head>
 <body>
-<main>
-  <a class="brand" href="/"><span class="brand-mark">T</span>Tranox</a>
-  <div id="app"><p class="empty">Loading the job...</p></div>
-  <footer>Payments run on Celo. Every step has a public transaction link.</footer>
+<a class="skip" href="#main">Skip to content</a>
+<div class="dark">
+  <div class="narrow">
+    <header class="topbar">
+      <a class="logo" href="/" aria-label="Tranox home">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span>
+        Tranox
+      </a>
+      <span class="badge-live"><span class="dot"></span>Celo mainnet</span>
+    </header>
+    <div class="app-head" id="head"><div class="skeleton dark-sk"></div></div>
+  </div>
+</div>
+<main id="main" class="narrow overlap">
+  <div id="app"><div class="skeleton"></div><div class="skeleton"></div></div>
 </main>
+<footer class="app-footer"><span data-icon="lock"></span>Paid on Celo. Every step has a public receipt.</footer>
 </body>
 </html>

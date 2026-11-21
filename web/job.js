@@ -1,42 +1,34 @@
-import { api, chip, connect, el, errorText, idFromQuery, money, payUsdt, short, signText, txLink, waitForReceipt } from "./app.js";
+import { api, busyButton, connect, el, errorText, icon, idFromQuery, money, notice, payUsdt, pill, short, signText, STATUS, txLink, waitForReceipt } from "./app.js";
+import { hydrateIcons } from "./icons.js";
 
+const head = document.getElementById("head");
 const app = document.getElementById("app");
 const id = idFromQuery();
 let job;
 let busy = false;
 let timer;
 
-function note(box, text, cls = "") {
-  box.className = "note " + cls;
-  box.textContent = text;
-}
-
-function steps(m) {
-  const approved = m.status !== "pending";
-  const paid = m.status === "paid";
-  return el("ol", { class: "steps" },
-    el("li", { class: approved ? "done" : "", text: "Approved by the client" }),
-    el("li", { class: paid ? "done" : "", text: "Converted to " + (job.freelancer.currency || "local currency") }),
-    el("li", { class: paid ? "done" : "", text: "Sent to " + job.freelancer.name }),
-  );
-}
+hydrateIcons();
 
 async function pay(m, box, button) {
   busy = true;
-  button.disabled = true;
+  const restore = busyButton(button, "Waiting for wallet");
   try {
     const wallet = await connect(job.client_wallet);
-    note(box, "Confirm the payment in your wallet.");
+    notice(box, "info", "Confirm the payment of " + money(m.amount_usdt) + " USD₮ in your wallet.");
     const hash = await payUsdt(wallet, job, m.amount_usdt);
-    note(box, "Payment sent. Waiting for Celo to confirm it...");
+    notice(box, "info", "Payment sent. Waiting for Celo to confirm it...");
     const receipt = await waitForReceipt(wallet.eth, hash);
-    if (!receipt) note(box, "Still waiting for confirmation. Do not pay again. ");
-    else if (receipt.status === "0x1") note(box, "Paid. " + (m.status === "pending" ? "Approve the milestone when the work is done. " : ""), "ok");
-    else note(box, "The payment failed and no money moved. You can try again. ", "error");
-    box.append(txLink(hash));
+    if (!receipt) notice(box, "warn", "Still confirming. Do not pay again. ", txLink(hash));
+    else if (receipt.status === "0x1") {
+      notice(box, "ok", m.status === "pending" ? "Paid. Approve the milestone once the work is done. " : "Paid. Tranox will convert and send it shortly. ", txLink(hash));
+      button.remove();
+      return;
+    } else notice(box, "error", "The payment failed and no money moved. You can try again. ", txLink(hash));
+    restore();
   } catch (e) {
-    note(box, errorText(e), "error");
-    button.disabled = false;
+    notice(box, "error", errorText(e));
+    restore();
   } finally {
     busy = false;
   }
@@ -44,76 +36,106 @@ async function pay(m, box, button) {
 
 async function approve(m, box, button) {
   busy = true;
-  button.disabled = true;
+  const restore = busyButton(button, "Waiting for signature");
   try {
     const wallet = await connect(job.client_wallet);
     const challenge = await api("/api/milestones/" + m.id + "/challenge", {});
-    note(box, "Sign the approval in your wallet. Signing is free and sends no money.");
+    notice(box, "info", "Sign the approval in your wallet. Signing is free and sends no money.");
     const signature = await signText(wallet, challenge.message);
     await api("/api/milestones/" + m.id + "/approve", { issued_at: challenge.issued_at, signature });
-    note(box, "Approved. Tranox pays " + job.freelancer.name + " once your payment for it has arrived.", "ok");
+    notice(box, "ok", "Approved. " + job.freelancer.name + " is paid as soon as your payment for it has arrived.");
+    button.remove();
     setTimeout(load, 1500);
   } catch (e) {
-    note(box, errorText(e), "error");
-    button.disabled = false;
+    notice(box, "error", errorText(e));
+    restore();
   } finally {
     busy = false;
   }
 }
 
-function milestoneCard(m) {
-  const box = el("p", { class: "note" });
+function track(m) {
+  const approved = m.status !== "pending";
+  const paid = m.status === "paid";
+  const states = [approved, paid, paid];
+  const names = ["Approved", "Converted", "Sent"];
+  return [
+    el("div", { class: "track", "aria-hidden": "true" }, ...states.map((d) => el("span", { class: d ? "done" : "" }))),
+    el("div", { class: "track-labels" }, ...names.map((n, i) => el("span", { class: states[i] ? "done" : "", text: (states[i] ? "✓ " : "") + n }))),
+  ];
+}
+
+function milestoneCard(m, index) {
   const cur = job.freelancer.currency;
-  const estimate = m.payout && m.payout.received
-    ? el("div", { class: "estimate", text: job.freelancer.name + " received " + money(m.payout.received) + " " + cur })
-    : job.rate_per_usdt && cur
-      ? el("div", { class: "estimate", text: "About " + money(m.amount_usdt * Number(job.rate_per_usdt)) + " " + cur + " at today's rate" })
-      : null;
-  const actions = el("div", { class: "actions" });
-  if (m.status !== "paid" && m.status !== "processing" && m.status !== "failed") {
-    const payBtn = el("button", { class: m.status === "pending" ? "secondary" : "", text: "Pay " + money(m.amount_usdt) + " USD₮" });
-    payBtn.addEventListener("click", () => pay(m, box, payBtn));
-    actions.append(payBtn);
+  const box = el("div", { class: "notice", "aria-live": "polite" });
+  const local = m.payout && m.payout.received
+    ? money(m.payout.received) + " " + cur + " received"
+    : job.rate_per_usdt && cur ? "≈ " + money(m.amount_usdt * Number(job.rate_per_usdt), 0) + " " + cur : "";
+  const buttons = [];
+  if (!["paid", "processing", "failed"].includes(m.status)) {
+    const b = el("button", { class: "btn btn-gold", type: "button" }, icon("wallet"), "Pay " + money(m.amount_usdt) + " USD₮");
+    b.addEventListener("click", () => pay(m, box, b));
+    buttons.push(b);
   }
   if (m.status === "pending") {
-    const approveBtn = el("button", { text: "Approve milestone" });
-    approveBtn.addEventListener("click", () => approve(m, box, approveBtn));
-    actions.append(approveBtn);
+    const b = el("button", { class: "btn btn-dark", type: "button" }, icon("pen"), "Approve");
+    b.addEventListener("click", () => approve(m, box, b));
+    buttons.push(b);
   }
+  if (m.status === "waiting_funds") notice(box, "warn", "Approved. Tranox is waiting for your USD₮ for this milestone to arrive.");
+  if (m.status === "failed") notice(box, "error", "This payout could not be completed. Contact the Tranox operator.");
   const links = m.payout && m.payout.payout_tx
-    ? el("p", { class: "note" }, txLink(m.payout.swap_tx, "Conversion"), " · ", txLink(m.payout.payout_tx, "Payment to " + job.freelancer.name))
+    ? el("div", { class: "links" }, txLink(m.payout.swap_tx, "Conversion"), txLink(m.payout.payout_tx, "Payment"))
     : null;
-  if (m.status === "waiting_funds") note(box, "Tranox is waiting for your USD₮ for this milestone to arrive.");
-  if (m.status === "failed") note(box, "This payout could not be completed. Contact the Tranox operator.", "error");
-  return el("section", { class: "card" },
-    el("div", { class: "milestone-head" }, el("div", { class: "milestone-title", text: m.title }), chip(m.status)),
-    el("div", { class: "amount", text: money(m.amount_usdt) + " USD₮" }),
-    estimate, steps(m), actions.childElementCount ? actions : null, links, box,
+  return el("article", { class: "ms fade-in", style: "animation-delay:" + index * 40 + "ms" },
+    el("div", { class: "ms-top" },
+      el("div", { class: "ms-icon " + m.status }, icon((STATUS[m.status] || STATUS.pending).icon, "icon-lg")),
+      el("div", { class: "ms-main" }, el("div", { class: "ms-title", text: m.title }), pill(m.status)),
+      el("div", { class: "ms-amt tnum" }, el("b", { text: money(m.amount_usdt) + " USD₮" }), el("span", { text: local })),
+    ),
+    ...track(m),
+    buttons.length ? el("div", { class: "ms-actions" + (buttons.length === 1 ? " one" : "") }, ...buttons) : null,
+    links,
+    box,
   );
 }
 
 function render() {
-  const total = job.milestones.reduce((s, m) => s + m.amount_usdt, 0);
-  const paid = job.milestones.filter((m) => m.status === "paid").length;
   const f = job.freelancer;
+  const total = job.milestones.reduce((s, m) => s + m.amount_usdt, 0);
+  const paidUsdt = job.milestones.filter((m) => m.status === "paid").reduce((s, m) => s + m.amount_usdt, 0);
+  const paidCount = job.milestones.filter((m) => m.status === "paid").length;
+  const pct = total ? Math.round((paidUsdt / total) * 100) : 0;
+  head.replaceChildren(
+    el("section", { class: "balance fade-in", "aria-label": "Job summary" },
+      el("div", { class: "label" }, icon("receipt"), job.job.client + " · " + job.job.title),
+      el("div", { class: "big tnum", text: money(total) + " USD₮" }),
+      el("div", { class: "sub", text: paidCount + " of " + job.milestones.length + " milestones paid to " + f.name + (f.country ? " in " + f.country : "") }),
+      el("div", { class: "meter", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(pct), "aria-label": "Paid so far" }, el("span", { style: "width:" + pct + "%" })),
+      el("div", { class: "meter-label tnum" }, el("span", { text: money(paidUsdt) + " USD₮ paid" }), el("span", { text: money(total - paidUsdt) + " USD₮ to go" })),
+    ),
+  );
+  const fact = (ic, k, v) => el("div", { class: "fact" }, el("div", { class: "k" }, icon(ic), k), el("div", { class: "v tnum", text: v }));
   app.replaceChildren(
-    el("section", { class: "card hero" },
-      el("div", { class: "label", text: job.job.client + " · " + job.job.title }),
-      el("div", { class: "big", text: money(total) + " USD₮" }),
-      el("div", { class: "meta", text: paid + " of " + job.milestones.length + " milestones paid to " + f.name + (f.country ? " in " + f.country : "") }),
+    el("section", { class: "panel facts fade-in", "aria-label": "Payment details" },
+      fact("globe", "Freelancer is paid in", f.currency || "Not set"),
+      fact("swap", "Today's rate", job.rate_per_usdt ? "1 USD₮ ≈ " + money(job.rate_per_usdt) + " " + f.currency : "Unavailable"),
+      fact("wallet", "Pay from", job.client_wallet ? short(job.client_wallet) : "No wallet set"),
+      fact("shield", "Tranox agent", short(job.agent_wallet)),
     ),
-    el("section", { class: "card" },
-      el("div", { class: "row" }, el("span", { text: "Freelancer is paid in" }), el("span", { text: f.currency || "not set" })),
-      job.rate_per_usdt ? el("div", { class: "row" }, el("span", { text: "Today's rate" }), el("span", { text: "1 USD₮ ≈ " + money(job.rate_per_usdt) + " " + f.currency })) : null,
-      el("div", { class: "row" }, el("span", { text: "Pay from" }), el("span", { text: job.client_wallet ? short(job.client_wallet) : "no wallet set" })),
-      el("div", { class: "row" }, el("span", { text: "Tranox agent" }), el("span", { text: short(job.agent_wallet) })),
-    ),
-    el("h2", { text: "Milestones" }),
-    ...(job.milestones.length ? job.milestones.map(milestoneCard) : [el("p", { class: "empty", text: "No milestones yet." })]),
+    el("div", { class: "list-title" }, el("h2", { text: "Milestones" }), el("span", { text: job.milestones.length + " total" })),
+    ...(job.milestones.length ? job.milestones.map(milestoneCard) : [el("div", { class: "empty-state", text: "No milestones yet." })]),
   );
   clearTimeout(timer);
   const tick = () => (busy ? (timer = setTimeout(tick, 20000)) : load());
   if (job.milestones.some((m) => ["queued", "processing", "waiting_funds"].includes(m.status))) timer = setTimeout(tick, 20000);
+}
+
+function fail(text) {
+  head.replaceChildren();
+  const box = el("div", { class: "notice" });
+  notice(box, "error", text);
+  app.replaceChildren(box);
 }
 
 async function load() {
@@ -121,9 +143,9 @@ async function load() {
     job = await api("/api/jobs/" + id);
     render();
   } catch (e) {
-    app.replaceChildren(el("p", { class: "note error", text: errorText(e) }));
+    fail(errorText(e));
   }
 }
 
 if (id) load();
-else app.replaceChildren(el("p", { class: "note error", text: "This job link is not valid. Ask for a new one." }));
+else fail("This job link is not valid. Ask for a new one.");
