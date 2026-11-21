@@ -116,7 +116,7 @@ function render() {
       el("div", { class: "meter-label tnum" }, el("span", { text: money(paidUsdt) + " USD₮ paid" }), el("span", { text: money(total - paidUsdt) + " USD₮ to go" })),
       el("div", { class: "facts", "aria-label": "Payment details" },
         fact("globe", "Freelancer is paid in", f.currency || "Not set"),
-        fact("swap", "Today's rate", job.rate_per_usdt ? "1 USD₮ ≈ " + money(job.rate_per_usdt) + " " + f.currency : "Unavailable"),
+        fact("swap", "Today's rate", job.rate_per_usdt ? "1 USD₮ ≈ " + money(job.rate_per_usdt) + " " + f.currency : f.currency ? "Checking..." : "Unavailable"),
         fact("wallet", "Pay from", job.client_wallet ? short(job.client_wallet) : "No wallet set"),
         fact("shield", "Tranox agent", short(job.agent_wallet)),
       ),
@@ -138,10 +138,23 @@ function fail(text) {
   app.replaceChildren(box);
 }
 
+async function fillRate() {
+  const cur = job.freelancer.currency;
+  if (job.rate_per_usdt || !cur) return;
+  try {
+    const r = await api("/api/rates/" + cur);
+    if (r.rate_per_usdt && !busy && job.freelancer.currency === cur) {
+      job.rate_per_usdt = r.rate_per_usdt;
+      render();
+    }
+  } catch {}
+}
+
 async function load() {
   try {
     job = await api("/api/jobs/" + id);
     render();
+    fillRate();
   } catch (e) {
     fail(errorText(e));
   }
