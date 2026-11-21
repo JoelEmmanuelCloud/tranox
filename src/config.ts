@@ -1,5 +1,17 @@
 import "dotenv/config";
-import type { Address, Hex } from "viem";
+import { getAddress, isAddress, type Address, type Hex } from "viem";
+
+function addressList(name: string): Address[] {
+  const raw = process.env[name] ?? "";
+  return raw
+    .split(",")
+    .map((a) => a.trim())
+    .filter(Boolean)
+    .map((a) => {
+      if (!isAddress(a, { strict: false })) throw new Error(`${name} has an invalid address: ${a}`);
+      return getAddress(a);
+    });
+}
 
 function req(name: string): string {
   const v = process.env[name];
@@ -18,6 +30,7 @@ export const env = {
   maxPayoutUsdt: Number(process.env.MAX_PAYOUT_USDT ?? 100),
   maxDailyUsdt: Number(process.env.MAX_DAILY_USDT ?? 300),
   maxQueueHours: Number(process.env.MAX_QUEUE_HOURS ?? 24),
+  freelancerAllowlist: () => addressList("FREELANCER_ALLOWLIST"),
   pbUrl: process.env.POCKETBASE_URL ?? "http://127.0.0.1:8090",
   pbEmail: process.env.POCKETBASE_ADMIN_EMAIL ?? "",
   pbPassword: process.env.POCKETBASE_ADMIN_PASSWORD ?? "",
