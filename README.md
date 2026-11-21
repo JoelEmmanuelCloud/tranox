@@ -60,6 +60,7 @@ sequenceDiagram
 | `pocketbase/pb_migrations` | Database tables: freelancers, jobs, milestones, payouts, worker_locks |
 | `pocketbase/pb_hooks` | Queues a payout on approval; serves the payment page's data |
 | `pocketbase/pb_public/pay.html` | The client payment page |
+| `scripts/gate.ts` | Payment gate: lets only the payment page through to PocketBase |
 | `scripts/` | Wallet, balances, quotes, agent registration, test payout |
 
 ## Run it
@@ -106,7 +107,7 @@ npm run quote -- 5        # live Textile FX prices and depth for every currency
 1. In the PocketBase admin (`http://127.0.0.1:8090/_/`), add a **freelancer** with their wallet and payout currency, and add that wallet to `FREELANCER_ALLOWLIST`.
 2. Add a **job** for that freelancer with the client's wallet in `client_wallet`.
 3. Add a **milestone** with the amount in USD₮. It starts as `pending`.
-4. Send the client `http://<your PocketBase host>/pay.html?m=<milestone id>`. They pay from that wallet. **Real money.** PocketBase must be reachable from the internet for this.
+4. Put the payment page online (see below) and send the client `https://<public address>/pay.html?m=<milestone id>`. They pay from that wallet. **Real money.**
 5. Set the milestone to `approved`. A payout appears in `payouts` as `queued`.
 6. Start the worker. **Real money.**
 
@@ -117,6 +118,22 @@ npm run quote -- 5        # live Textile FX prices and depth for every currency
    The payout moves to `paid` with the swap and payout transaction hashes. Until the client's USD₮ arrives, its `error` field says how much is still needed.
 
 To test one payout without a client, `npm run swap:test -- <freelancer wallet> cNGN 5` converts 5 USD₮ from the agent's own funds and pays it out. **Real money.**
+
+### Put the payment page online
+
+Clients open the payment page from their phone, so it must be reachable from the internet. Never expose PocketBase itself: its admin page and records would be public. Instead, run the payment gate, which lets through only `/pay.html` and the page's data route (`/api/tranox/pay/<milestone id>`) and answers everything else with "not found".
+
+Run each in its own terminal:
+
+```bash
+npm run pb       # PocketBase on 127.0.0.1:8090
+npm run gate     # payment gate on 127.0.0.1:8091
+cloudflared tunnel --url http://127.0.0.1:8091
+```
+
+The last command needs [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) (on Windows: `winget install Cloudflare.cloudflared`). It prints a public address like `https://<random words>.trycloudflare.com`; payment links are that address plus `/pay.html?m=<milestone id>`.
+
+This free quick tunnel needs no account, but it is for testing: the address changes every time it restarts (links sent earlier stop working), and it only works while this computer runs all three commands. For a lasting address, run the same gate on a small always-on server, or use a named Cloudflare tunnel.
 
 ### 4. Register the agent
 
