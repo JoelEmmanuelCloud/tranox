@@ -7,7 +7,7 @@ Built for Celo's **Agents Open for Business** hackathon (Stablecoin Corridors tr
 ## Flow
 
 1. Client funds the job in USD₮
-2. GoWork (PocketBase) marks a milestone approved → a `payouts` record is queued
+2. A milestone is approved in PocketBase → the hook queues a `payouts` record in the same transaction
 3. Agent gets a firm Textile FX quote, approves and swaps (tagged)
 4. Agent transfers the local stablecoin to the freelancer (tagged) and writes tx hashes back
 
@@ -16,6 +16,9 @@ Built for Celo's **Agents Open for Business** hackathon (Stablecoin Corridors tr
 ```bash
 npm install
 cp .env.example .env
+# PocketBase: unzip v0.40.6 for your OS into pocketbase/bin, then
+npm run pb -- superuser upsert <email> <password>   # put the same pair in .env
+npm run pb                  # http://127.0.0.1:8090/_/ applies migrations and hooks
 npm run wallet:new          # paste AGENT_PRIVATE_KEY into .env
 npm run balances            # after funding with CELO + USD₮
 npm run quote -- 10         # indicative prices for every corridor
