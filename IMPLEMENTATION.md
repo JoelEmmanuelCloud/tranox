@@ -68,8 +68,8 @@ npx loopshouse add agents-open-for-business
   - Installs the `loops` CLI, writes this event's skill into your coding agent, signs you in via the browser
   - Re-run any time to pick up the latest sponsors and deadlines
   - Then ask your agent things like "Using Textile's docs, how do I build the takerProof?" or "Save this plan as an artifact called 'MVP scope'"
-- [ ] Create the agent hot wallet (fresh key, never reused); store the key in `.env`, never commit it
-- [ ] Fund the agent wallet with a little CELO for gas and a small USD₮ float
+- [x] Create the agent hot wallet (fresh key, never reused); store the key in `.env`, never commit it. Done 21 Nov: `0xB1eF0cEa020B273E1c30370a787B9447DfE14706`. Back up the key in a password manager
+- [ ] Fund the agent wallet on the Celo network: about 0.5 CELO for gas (registration about 0.05 CELO, one full payout about 0.09 CELO at 21 Nov gas prices) and 1 USD₮ for the test payout. Milestone payouts need no agent USD₮: the client's payment is what gets converted
 - [x] Install deps: `npm i viem @celo/attribution-tags dotenv`
 - [x] Wrap the wallet client so **every** transaction appends the tag:
 
@@ -110,7 +110,7 @@ Docs: https://fx-docs.textilecredit.com/api/v2/rfq.html — keyless works (no AP
 - [ ] Check `now < quote.expiresAt`, else re-request
 - [ ] Send `transactions.swap` from the agent wallet (tagged)
 - [ ] `POST /v2/rfq/{id}/submit` with `{ "txHash": "0x…" }` and header `X-Rfq-Claim`
-- [ ] Test: one real $5 USD₮ → cNGN swap on mainnet, confirm the tag with `verifyTx`
+- [ ] Test: one real 1 USD₮ swap on mainnet to a real freelancer, in a currency with makers online (`npm run quote -- 1`), confirm the tag with `verifyTx`
 
 Token addresses (Celo mainnet):
 

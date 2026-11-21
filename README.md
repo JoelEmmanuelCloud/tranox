@@ -95,7 +95,12 @@ Main `.env` settings:
 
 ### 2. Fund the agent and check prices
 
-Send the agent wallet a little CELO for gas and some USD₮, then:
+Send the agent wallet, on the Celo network:
+
+- **About 0.5 CELO for gas.** At the gas price on 21 Nov 2026, registering the agent is estimated at about 0.05 CELO and one full payout (approve, swap, transfer) at about 0.09 CELO, with generous gas limits, so 0.5 CELO covers registration and about 5 payouts.
+- **1 USD₮ for a test payout, or none.** Real payouts are funded by the client through the payment link; the agent only spends its own USD₮ in `swap:test`. Textile quoted swaps as small as 1 USD₮ on 21 Nov.
+
+Then:
 
 ```bash
 npm run balances          # agent wallet balances
@@ -117,7 +122,7 @@ npm run quote -- 5        # live Textile FX prices and depth for every currency
 
    The payout moves to `paid` with the swap and payout transaction hashes. Until the client's USD₮ arrives, its `error` field says how much is still needed.
 
-To test one payout without a client, `npm run swap:test -- <freelancer wallet> cNGN 5` converts 5 USD₮ from the agent's own funds and pays it out. **Real money.**
+To test one payout without a client, `npm run swap:test -- <freelancer wallet> IDRX 1` converts 1 USD₮ from the agent's own funds and pays it out. Pick a currency that `npm run quote -- 1` shows with makers online. **Real money.**
 
 ### Put the payment page online
 
@@ -141,7 +146,7 @@ Host `agent-card.json` at a public URL, set `AGENT_CARD_URI` in `.env`, then run
 
 ## Liquidity
 
-Textile FX depth changes with the makers online. On 20 Nov 2026, for 5 USD₮: cNGN and IDRX had over 40,000 USD₮ of depth, wBRL about 9.80 and wCOP about 7.66, wARS had no valid quote and wMXN had no makers online. Run `npm run quote -- <amount>` before paying in a thin currency; the worker also checks depth and waits if there is not enough.
+Textile FX depth changes with the makers online. On 20 Nov 2026, for 5 USD₮: cNGN and IDRX had over 40,000 USD₮ of depth, wBRL about 9.80 and wCOP about 7.66, wARS had no valid quote and wMXN had no makers online. On 21 Nov, for 1 USD₮: IDRX and wARS had thousands of USD₮ of depth, wBRL about 4.02 and wCOP about 6.71, and cNGN and wMXN had no makers online. Run `npm run quote -- <amount>` before paying in a thin currency; the worker also checks depth and waits if there is not enough.
 
 ## Celo mainnet addresses
 
@@ -160,7 +165,7 @@ Textile FX depth changes with the makers online. On 20 Nov 2026, for 5 USD₮: c
 ## Hackathon details
 
 - Attribution tag: `celo_37620e33107f`
-- Agent wallet: not created yet
+- Agent wallet: [`0xB1eF0cEa020B273E1c30370a787B9447DfE14706`](https://celoscan.io/address/0xB1eF0cEa020B273E1c30370a787B9447DfE14706)
 - ERC-8004 agent ID: not registered yet
 - Self Agent ID: not registered yet
 - Tagged transactions: none yet; Celoscan links will be listed here
