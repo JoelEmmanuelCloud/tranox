@@ -143,7 +143,12 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - [x] Daily cap (`MAX_DAILY_USDT`, UTC day) holds the payout until 00:00 UTC. "Spent today" is the highest of: USD₮ the agent wallet sent on-chain today, today's `paid` plus `processing` payouts in PocketBase, and this process's own count. Any USD₮ leaving the agent wallet counts, including `swap:test` and manual transfers
   - [x] `swap:test` takes the same lock as the worker, refuses to run while any payout is `processing`, and records itself as a `payouts` row (`source = manual`) so recovery and the daily cap see it. `--standalone` skips all of this and is only for tests before PocketBase is set up
   - [x] Allowlist of freelancer wallets (`FREELANCER_ALLOWLIST` in `.env`, comma-separated). Kept out of PocketBase so a changed profile wallet cannot redirect a payout. Empty list means no payouts. Paying the agent wallet is refused. Add each freelancer's wallet here once you confirm it with them directly, then restart the worker
-- [ ] Retries: `no_quote` → retry later; expired quote → re-request
+- [x] Retries (checked against Textile's errors page, https://fx-docs.textilecredit.com/api/v2/errors.html):
+  - No quote or not enough depth: stays `queued`, waits `retryAfterMs` when Textile gives one, else 60 s (10 min when the corridor is too shallow)
+  - Quote expired before the swap: a new quote is requested on the next try
+  - Textile 429, 500, 502, 503, timeouts and dropped connections: stays `queued`. A 429 waits the `Retry-After` time when sent, else 60 s
+  - Swap reverted on-chain (for example after the order deadline): nothing was swapped, so it stays `queued` with a fresh quote next time. After 3 reverted swaps the payout fails, so a broken swap cannot keep spending gas
+  - All of these give up after `MAX_QUEUE_HOURS`. Other Textile errors (400, 401, 403, 404, 409) fail the payout at once, as the docs say they need a fix, not a retry
 - [ ] **Milestone: first real mainnet payout to a freelancer by 28 Nov**
 
 ## Step 5 — Self Agent ID + x402 (29 Nov–3 Dec, stretch)
