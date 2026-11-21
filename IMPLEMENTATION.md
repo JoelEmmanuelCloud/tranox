@@ -152,6 +152,12 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - Before a milestone payout starts, the worker adds up all USD₮ this client wallet has sent the agent wallet since its earliest `funded_since`. That total must cover this payout plus all of the client's `paid` and `processing` payouts. If not, the payout stays `queued`, its `error` says how much has arrived and how much is needed, and it is checked again every 2 minutes. It never gives up waiting for funds
   - When funds are confirmed the worker sets `funded_at`. The `MAX_QUEUE_HOURS` wait for liquidity counts from then, not from approval
   - `swap:test` payouts (`source = manual`) skip the check
+- [x] Client payment page (`pocketbase/pb_public/pay.html`), so the client's own payment carries our tag and counts as independent tagged activity
+  - Send the client `https://<pocketbase host>/pay.html?m=<milestone id>`. Open it in MiniPay or any browser with a Celo wallet
+  - The page reads the milestone from `GET /api/tranox/pay/{id}` (`pocketbase/pb_hooks/pay.pb.js`): job, milestone title, amount, status, client wallet, agent wallet, tag bytes. Nothing else is public
+  - It switches the wallet to Celo, refuses any wallet but the job's `client_wallet`, checks the USD₮ balance, then sends a USD₮ transfer to the agent wallet with the tag added. The worker's funds check picks it up from the chain
+  - `npm run pb` passes the agent wallet address and tag bytes to PocketBase from `.env`. Without a valid `AGENT_PRIVATE_KEY` the page says payments are not open yet
+  - The page only works for clients once PocketBase is reachable from the internet. Host it (or tunnel to it) before sending links
 - [ ] Agent worker picks up `queued` payouts:
   1. ~~Confirm the client's USD₮ has arrived~~ Done 20 Nov, see the funds check above
   2. Get a Textile quote into the freelancer's currency

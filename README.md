@@ -6,7 +6,7 @@ Built for Celo's **Agents Open for Business** hackathon (Stablecoin Corridors tr
 
 ## Flow
 
-1. Client sends USD₮ to the agent wallet from the `client_wallet` saved on the job. The worker waits until the client's total covers the milestone
+1. Client opens the milestone's payment link (`/pay.html?m=<milestone id>`) in MiniPay or another Celo wallet and pays USD₮ to the agent from the `client_wallet` saved on the job. The payment carries the attribution tag. The worker waits until the client's total covers the milestone
 2. A milestone is approved in PocketBase → the hook queues a `payouts` record in the same transaction
 3. Agent gets a firm Textile FX quote, approves and swaps (tagged)
 4. Agent transfers the local stablecoin to the freelancer (tagged) and writes tx hashes back
