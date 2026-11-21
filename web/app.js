@@ -87,15 +87,27 @@ export function wallet() {
   return window.ethereum;
 }
 
+async function ask(eth, step, args) {
+  try {
+    return await eth.request(args);
+  } catch (e) {
+    if (e && e.code === 4001) throw e;
+    const detail = (e && (e.data && e.data.message || e.message)) || String(e);
+    const err = new Error("Wallet step failed while " + step + ": " + detail + (e && e.code !== undefined ? " (code " + e.code + ")" : ""));
+    err.code = e && e.code;
+    throw err;
+  }
+}
+
 export async function connect(expected) {
   const eth = wallet();
-  const [account] = await eth.request({ method: "eth_requestAccounts" });
-  if ((await eth.request({ method: "eth_chainId" })) !== CHAIN_ID) {
+  const [account] = await ask(eth, "connecting the wallet", { method: "eth_requestAccounts" });
+  if ((await ask(eth, "reading the network", { method: "eth_chainId" })) !== CHAIN_ID) {
     try {
-      await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
+      await ask(eth, "switching to Celo", { method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
     } catch (e) {
       if (e.code !== 4902) throw e;
-      await eth.request({ method: "wallet_addEthereumChain", params: [CELO] });
+      await ask(eth, "adding Celo", { method: "wallet_addEthereumChain", params: [CELO] });
     }
   }
   if (expected && (!account || account.toLowerCase() !== expected.toLowerCase())) {
@@ -112,22 +124,32 @@ function toUnits(amount, decimals) {
   return BigInt(whole + frac.padEnd(decimals, "0"));
 }
 
-async function call(eth, to, data) {
-  return BigInt(await eth.request({ method: "eth_call", params: [{ to, data }, "latest"] }));
+async function call(eth, step, to, data) {
+  return BigInt(await ask(eth, step, { method: "eth_call", params: [{ to, data }, "latest"] }));
 }
 
 export async function payUsdt({ eth, account }, job, amount) {
-  const decimals = Number(await call(eth, job.usdt, "0x313ce567"));
-  const units = toUnits(amount, decimals);
-  if ((await call(eth, job.usdt, "0x70a08231" + pad(account))) < units) throw new Error("Not enough USD₮ in this wallet for " + amount + " USD₮.");
+  const units = toUnits(amount, job.usdt_decimals);
+  const balance = await call(eth, "checking your USD₮ balance", job.usdt, "0x70a08231" + pad(account)).catch(() => null);
+  if (balance !== null && balance < units) throw new Error("Not enough USD₮ in this wallet for " + amount + " USD₮.");
   const data = "0xa9059cbb" + pad(job.agent_wallet) + pad(units.toString(16)) + job.data_suffix.replace(/^0x/, "");
-  return eth.request({ method: "eth_sendTransaction", params: [{ from: account, to: job.usdt, data }] });
+  return ask(eth, "sending the payment", { method: "eth_sendTransaction", params: [{ from: account, to: job.usdt, data }] });
+}
+
+async function receiptStatus(eth, hash) {
+  try {
+    const r = await eth.request({ method: "eth_getTransactionReceipt", params: [hash] });
+    return r ? r.status : null;
+  } catch {
+    const r = await api("/api/tx/" + String(hash).toLowerCase());
+    return r.status === "success" ? "0x1" : r.status === "reverted" ? "0x0" : null;
+  }
 }
 
 export async function waitForReceipt(eth, hash) {
   for (let i = 0; i < 60; i++) {
-    const r = await eth.request({ method: "eth_getTransactionReceipt", params: [hash] });
-    if (r) return r;
+    const status = await receiptStatus(eth, hash).catch(() => null);
+    if (status) return { status };
     await new Promise((ok) => setTimeout(ok, 3000));
   }
   return null;
@@ -135,7 +157,7 @@ export async function waitForReceipt(eth, hash) {
 
 export async function signText({ eth, account }, message) {
   const hex = "0x" + Array.from(new TextEncoder().encode(message), (b) => b.toString(16).padStart(2, "0")).join("");
-  return eth.request({ method: "personal_sign", params: [hex, account] });
+  return ask(eth, "signing the approval", { method: "personal_sign", params: [hex, account] });
 }
 
 export function errorText(e) {
