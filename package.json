@@ -14,7 +14,8 @@
     "quote": "tsx scripts/quote.ts",
     "swap:test": "tsx scripts/swap-test.ts",
     "worker": "tsx src/worker.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pb": "tsx scripts/pocketbase.ts"
   },
   "dependencies": {
     "@celo/attribution-tags": "^0.5.0",
