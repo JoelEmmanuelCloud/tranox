@@ -3,61 +3,164 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tranox - pay freelancers in their own currency</title>
-<meta name="description" content="Clients pay in dollars. Freelancers get naira, rupiah, pesos or reais in their phone wallet minutes after a milestone is approved.">
+<meta name="theme-color" content="#070b16">
+<title>Tranox - get paid abroad, spend it at home</title>
+<meta name="description" content="Clients pay in dollars. Freelancers receive naira, rupiah, pesos or reais in their phone wallet minutes after a milestone is approved. Built on Celo with Textile FX.">
 <link rel="stylesheet" href="/assets/styles.css">
+<script type="module" src="/assets/icons.js"></script>
 </head>
 <body>
-<main class="wide">
-  <a class="brand" href="/"><span class="brand-mark">T</span>Tranox</a>
+<a class="skip" href="#main">Skip to content</a>
 
-  <section class="home-hero">
-    <h1>Pay freelancers abroad in the money they spend.</h1>
-    <p class="sub">The client pays a milestone in dollars. Tranox converts it on-chain at a firm quote and sends the freelancer naira, rupiah, pesos or reais in their phone wallet, minutes after the work is approved.</p>
-    <div class="pills">
-      <span class="pill">cNGN · Nigeria</span>
-      <span class="pill">IDRX · Indonesia</span>
-      <span class="pill">wARS · Argentina</span>
-      <span class="pill">wBRL · Brazil</span>
-      <span class="pill">wMXN · Mexico</span>
-      <span class="pill">wCOP · Colombia</span>
+<div class="dark">
+  <div class="wrap">
+    <header class="topbar">
+      <a class="logo" href="/" aria-label="Tranox home">
+        <span class="logo-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span>
+        Tranox
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/JoelEmmanuelCloud/tranox" target="_blank" rel="noopener">View the code <span data-icon="external"></span></a>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <span class="eyebrow"><span data-icon="zap"></span>Live on Celo mainnet</span>
+        <h1 id="hero-title">Get paid abroad.<br><em>Spend it at home.</em></h1>
+        <p class="lede">Your client pays a milestone in dollars. Tranox converts it on-chain at a firm quote and sends you naira, rupiah, pesos or reais in your phone wallet, minutes after the work is approved.</p>
+        <div class="cta-row">
+          <a class="btn btn-gold" href="#how">See how it works <span data-icon="arrow"></span></a>
+          <a class="btn btn-ghost" href="#proof">Check the public record</a>
+        </div>
+        <div class="trust-row">
+          <span><span data-icon="shield"></span>Client funds checked on-chain</span>
+          <span><span data-icon="receipt"></span>A public receipt for every step</span>
+          <span><span data-icon="zap"></span>Paid in minutes, not days</span>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone" role="img" aria-label="Example of the Tranox freelancer screen showing 368,142 IDRX received">
+          <div class="phone-glow"></div>
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="phone-inner">
+              <div class="dark phone-top">
+                <div class="balance">
+                  <div class="label"><span data-icon="user"></span>Hi Ada, you have received</div>
+                  <div class="big tnum">368,142 IDRX</div>
+                  <div class="sub">2 of 3 payouts paid · 7 USD₮ on the way</div>
+                </div>
+              </div>
+              <div class="phone-list">
+                <div class="ms">
+                  <div class="ms-top">
+                    <div class="ms-icon paid"><span data-icon="check" data-icon-class="icon-lg"></span></div>
+                    <div class="ms-main"><div class="ms-title">Final files</div><span class="pill paid"><span data-icon="check"></span>Paid</span></div>
+                    <div class="ms-amt tnum"><b>368,142 IDRX</b><span>from 20 USD₮</span></div>
+                  </div>
+                  <div class="track"><span class="done"></span><span class="done"></span><span class="done"></span></div>
+                </div>
+                <div class="ms">
+                  <div class="ms-top">
+                    <div class="ms-icon processing"><span data-icon="swap" data-icon-class="icon-lg"></span></div>
+                    <div class="ms-main"><div class="ms-title">Brand guide</div><span class="pill processing"><span data-icon="swap"></span>Converting</span></div>
+                    <div class="ms-amt tnum"><b>7 USD₮</b><span>≈ 128,850 IDRX</span></div>
+                  </div>
+                  <div class="track"><span class="done"></span><span class="done"></span><span></span></div>
+                </div>
+                <div class="ms">
+                  <div class="ms-top">
+                    <div class="ms-icon"><span data-icon="pen" data-icon-class="icon-lg"></span></div>
+                    <div class="ms-main"><div class="ms-title">Social media kit</div><span class="pill"><span data-icon="pen"></span>Awaiting approval</span></div>
+                    <div class="ms-amt tnum"><b>5 USD₮</b><span>≈ 92,036 IDRX</span></div>
+                  </div>
+                  <div class="track"><span></span><span></span><span></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="float-card float-a" aria-hidden="true"><span class="ok"><span data-icon="check"></span></span><div>+368,142 IDRX<small>Sent to Ada's MiniPay</small></div></div>
+        <div class="float-card float-b" aria-hidden="true"><span class="ok"><span data-icon="pen"></span></span><div>Milestone approved<small>Signed by the client's wallet</small></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<main id="main">
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">How it works</span>
+        <h2 id="how-title">Three steps from a dollar invoice to money you can spend</h2>
+        <p>No bank wire, no payout platform, no second conversion. Each step is a Celo transaction anyone can check.</p>
+      </div>
+      <div class="cards3">
+        <article class="feature"><div class="feature-icon"><span data-icon="wallet" data-icon-class="icon-lg"></span></div><div class="step-n">STEP 1</div><h3 class="after-step">The client pays</h3><p>From the job page, the client pays each milestone in USD₮ from their own wallet, such as MiniPay.</p></article>
+        <article class="feature"><div class="feature-icon"><span data-icon="pen" data-icon-class="icon-lg"></span></div><div class="step-n">STEP 2</div><h3 class="after-step">The client approves</h3><p>When the work is done, the client approves by signing with the same wallet. Signing is free and moves no money.</p></article>
+        <article class="feature"><div class="feature-icon"><span data-icon="send" data-icon-class="icon-lg"></span></div><div class="step-n">STEP 3</div><h3 class="after-step">You get paid locally</h3><p>The Tranox agent confirms the money arrived, converts it on Textile FX, and sends your local stablecoin straight to you.</p></article>
+      </div>
     </div>
   </section>
 
-  <h2>How it works</h2>
-  <div class="grid">
-    <section class="card">
-      <div class="step-num">1</div>
-      <strong>The client pays</strong>
-      <p class="sub">From the job page, the client pays each milestone in USD₮ from their own wallet, such as MiniPay.</p>
-    </section>
-    <section class="card">
-      <div class="step-num">2</div>
-      <strong>The client approves</strong>
-      <p class="sub">When the work is done, the client approves the milestone by signing with the same wallet. Signing is free.</p>
-    </section>
-    <section class="card">
-      <div class="step-num">3</div>
-      <strong>The freelancer is paid</strong>
-      <p class="sub">The Tranox agent checks the money arrived, converts it on Textile FX, and sends the local stablecoin to the freelancer.</p>
-    </section>
-  </div>
-
-  <h2>Why it is safer</h2>
-  <div class="grid">
-    <section class="card"><strong>No payout without the money</strong><p class="sub">The agent pays a milestone only after the client's USD₮ has arrived on-chain.</p></section>
-    <section class="card"><strong>Only confirmed wallets</strong><p class="sub">Freelancer wallets are confirmed with each freelancer before any payout can reach them.</p></section>
-    <section class="card"><strong>Public receipts</strong><p class="sub">Every conversion and payment is a Celo transaction anyone can check.</p></section>
-  </div>
-
-  <h2>Public record</h2>
-  <section class="card">
-    <div class="row"><span>Agent identity</span><span><a href="https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e" target="_blank" rel="noopener">ERC-8004 agent 10085</a></span></div>
-    <div class="row"><span>Agent wallet</span><span><a href="https://celoscan.io/address/0xB1eF0cEa020B273E1c30370a787B9447DfE14706" target="_blank" rel="noopener">0xB1eF...4706</a></span></div>
-    <div class="row"><span>Source code</span><span><a href="https://github.com/JoelEmmanuelCloud/tranox" target="_blank" rel="noopener">GitHub</a></span></div>
+  <section class="section tight" aria-labelledby="ccy-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Currencies</span>
+        <h2 id="ccy-title">Six local currencies, one dollar invoice</h2>
+        <p>Conversions run on Textile FX between USD₮ and each local stablecoin on Celo.</p>
+      </div>
+      <div class="corridors">
+        <div class="corridor"><span class="ccy ngn">NGN</span><div><b>cNGN</b><span>Nigeria</span></div></div>
+        <div class="corridor"><span class="ccy idr">IDR</span><div><b>IDRX</b><span>Indonesia</span></div></div>
+        <div class="corridor"><span class="ccy ars">ARS</span><div><b>wARS</b><span>Argentina</span></div></div>
+        <div class="corridor"><span class="ccy brl">BRL</span><div><b>wBRL</b><span>Brazil</span></div></div>
+        <div class="corridor"><span class="ccy mxn">MXN</span><div><b>wMXN</b><span>Mexico</span></div></div>
+        <div class="corridor"><span class="ccy cop">COP</span><div><b>wCOP</b><span>Colombia</span></div></div>
+      </div>
+    </div>
   </section>
 
-  <footer>Built on Celo with Textile FX for the Agents Open for Business hackathon.</footer>
+  <section class="section tight" aria-labelledby="safe-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Built to be safe</span>
+        <h2 id="safe-title">Nobody gets paid by mistake</h2>
+      </div>
+      <div class="cards3">
+        <article class="feature"><div class="feature-icon"><span data-icon="shield" data-icon-class="icon-lg"></span></div><h3>No payout without the money</h3><p>The agent pays a milestone only after the client's USD₮ for it has arrived on-chain.</p></article>
+        <article class="feature"><div class="feature-icon"><span data-icon="lock" data-icon-class="icon-lg"></span></div><h3>Only the client can approve</h3><p>Approval needs a signature from the client wallet on the job. A shared link cannot release money.</p></article>
+        <article class="feature"><div class="feature-icon"><span data-icon="user" data-icon-class="icon-lg"></span></div><h3>Only confirmed wallets</h3><p>Each freelancer's wallet is confirmed with them before any payout can reach it, with daily spending limits on top.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tight" id="proof" aria-labelledby="proof-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Public record</span>
+        <h2 id="proof-title">Check everything on-chain</h2>
+      </div>
+      <div class="proof">
+        <div><div class="label">Agent identity</div><div class="value">ERC-8004 agent 10085</div><a href="https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e" target="_blank" rel="noopener">Registration <span data-icon="external"></span></a></div>
+        <div><div class="label">Agent wallet</div><div class="value tnum">0xB1eF...4706</div><a href="https://celoscan.io/address/0xB1eF0cEa020B273E1c30370a787B9447DfE14706" target="_blank" rel="noopener">All transactions <span data-icon="external"></span></a></div>
+        <div><div class="label">Attribution tag</div><div class="value">celo_37620e33107f</div><a href="https://docs.celo.org/build-on-celo/attribution-tags" target="_blank" rel="noopener">What this is <span data-icon="external"></span></a></div>
+        <div><div class="label">Source code</div><div class="value">Open source</div><a href="https://github.com/JoelEmmanuelCloud/tranox" target="_blank" rel="noopener">GitHub <span data-icon="external"></span></a></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="cta-band dark" aria-labelledby="cta-title">
+      <div><h2 id="cta-title">Paying a freelancer abroad?</h2><p>Set up a job, share the link, and pay each milestone from your wallet.</p></div>
+      <a class="btn btn-gold" href="https://github.com/JoelEmmanuelCloud/tranox#run-it" target="_blank" rel="noopener">Get started <span data-icon="arrow"></span></a>
+    </section>
+  </div>
 </main>
+
+<footer class="wrap site-footer">
+  <span>Tranox · Built on Celo with Textile FX</span>
+  <span>Agents Open for Business hackathon</span>
+</footer>
 </body>
 </html>
