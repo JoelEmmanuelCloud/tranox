@@ -4,7 +4,9 @@
   "private": true,
   "description": "Tranox: pays GoWork freelancers in local stablecoins on Celo via Textile FX",
   "type": "module",
-  "engines": { "node": ">=20.12" },
+  "engines": {
+    "node": ">=20.12"
+  },
   "scripts": {
     "wallet:new": "tsx scripts/new-wallet.ts",
     "balances": "tsx scripts/balances.ts",
@@ -17,7 +19,7 @@
   "dependencies": {
     "@celo/attribution-tags": "^0.5.0",
     "dotenv": "^16.4.5",
-    "pocketbase": "^0.21.5",
+    "pocketbase": "^0.29.0",
     "viem": "^2.21.0"
   },
   "devDependencies": {

@@ -46,7 +46,8 @@ export const lease = createLease(
 );
 
 export async function login() {
-  await (pb as any).admins.authWithPassword(env.pbEmail, env.pbPassword);
+  if (!env.pbEmail || !env.pbPassword) throw new Error("Set POCKETBASE_ADMIN_EMAIL and POCKETBASE_ADMIN_PASSWORD in .env");
+  await pb.collection("_superusers").authWithPassword(env.pbEmail, env.pbPassword);
 }
 
 async function recordedTxs(excludeId: string): Promise<Set<string>> {
