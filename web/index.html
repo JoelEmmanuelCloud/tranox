@@ -46,25 +46,29 @@
         <a class="text-link" href="#proof">Check the public record</a>
       </div>
 
-      <figure class="route" aria-label="Example payout: Acme Studio in London pays 20 USD₮, Textile FX converts it, and Ada in Jakarta receives 368,142 IDRX">
-        <div class="route-node">
-          <span class="route-who">Acme Studio, London</span>
-          <span class="route-amt tnum">20 USD₮</span>
-          <span class="route-note">pays the milestone</span>
+      <figure class="route" aria-label="Example milestone payout: Acme Studio in London sends 20 USD₮, it is converted on Textile FX at 1 USD₮ to 18,407 IDRX, and Ada in Jakarta receives 368,142 IDRX">
+        <figcaption class="route-head"><span>Milestone payout</span><span>Example</span></figcaption>
+        <div class="route-body">
+          <div class="party">
+            <span class="avatar" aria-hidden="true">AS</span>
+            <div class="party-name">Acme Studio</div>
+            <div class="party-city">London</div>
+            <div class="party-amt tnum">$20 <small>USD₮</small></div>
+            <div class="party-note">Sent</div>
+          </div>
+          <div class="bridge">
+            <div class="bridge-rate tnum">1 USD₮ = 18,407 IDRX</div>
+            <div class="bridge-line" aria-hidden="true"><span class="bridge-dot"></span></div>
+            <div class="bridge-via">Converted on Textile FX</div>
+          </div>
+          <div class="party party-end">
+            <span class="avatar avatar-gold" aria-hidden="true">A</span>
+            <div class="party-name">Ada</div>
+            <div class="party-city">Jakarta</div>
+            <div class="party-amt party-get tnum">Rp 368,142 <small>IDRX</small></div>
+            <div class="party-note party-ok"><span data-icon="check"></span>Arrived in her wallet</div>
+          </div>
         </div>
-        <div class="route-link" aria-hidden="true"><span class="route-dot"></span></div>
-        <div class="route-node">
-          <span class="route-who">Textile FX on Celo</span>
-          <span class="route-amt route-rate tnum">1 USD₮ ≈ 18,407 IDRX</span>
-          <span class="route-note">firm quote, one transaction</span>
-        </div>
-        <div class="route-link" aria-hidden="true"><span class="route-dot late"></span></div>
-        <div class="route-node">
-          <span class="route-who">Ada, Jakarta</span>
-          <span class="route-amt route-get tnum">368,142 IDRX</span>
-          <span class="route-note route-ok"><span data-icon="check"></span>in her wallet</span>
-        </div>
-        <figcaption class="route-cap">Example payout</figcaption>
       </figure>
     </section>
   </div>
