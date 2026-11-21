@@ -1,4 +1,4 @@
-import { formatUnits, type Address, type Hex } from "viem";
+import { formatUnits, getAddress, isAddress, type Address, type Hex } from "viem";
 import { env, TOKENS, PAYOUT_CURRENCIES, type PayoutCurrency } from "./config.js";
 import { balanceOf, decimals, fromUnits, toUnits, transferTagged } from "./erc20.js";
 import { sentSince } from "./spend.js";
@@ -69,8 +69,19 @@ export async function ensureDepth(currency: PayoutCurrency, sellToken: Address, 
   );
 }
 
+export function checkRecipient(wallet: string): Address {
+  if (!isAddress(wallet, { strict: false })) throw new Error(`Freelancer wallet is not a valid address: ${wallet}`);
+  const to = getAddress(wallet);
+  if (to === agent().address) throw new Error("Freelancer wallet is the agent wallet; refusing to pay itself");
+  const allowlist = env.freelancerAllowlist();
+  if (allowlist.length === 0) throw new Error("FREELANCER_ALLOWLIST is empty; no payouts are allowed until it is set");
+  if (!allowlist.includes(to)) throw new Error(`Freelancer wallet ${to} is not on FREELANCER_ALLOWLIST`);
+  return to;
+}
+
 export async function executePayout(p: PayoutRequest): Promise<PayoutResult> {
   if (!PAYOUT_CURRENCIES.includes(p.currency)) throw new Error(`Unsupported currency ${p.currency}`);
+  const to = checkRecipient(p.freelancerWallet);
   const amount = Number(p.amountUsdt);
   await checkGuardrails(amount);
 
@@ -87,7 +98,7 @@ export async function executePayout(p: PayoutRequest): Promise<PayoutResult> {
   const received = after - before;
   if (received <= 0n) throw new Error(`Swap ${swapTx} delivered no ${p.currency}`);
 
-  const payoutTx = await transferTagged(target, p.freelancerWallet, received);
+  const payoutTx = await transferTagged(target, to, received);
   spentToday += amount;
 
   return { approvalTx, swapTx, payoutTx, rfqId: quote.rfqId, received };
