@@ -83,7 +83,7 @@ const TAG = toDataSuffix(process.env.CELO_ATTRIBUTION_TAG!);
 - [x] Register the agent on the **ERC-8004 Identity Registry** from the agent wallet. Done 21 Nov: agent ID `10085`, tx https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e, tag verified, gas 0.0408 CELO
   - Celo mainnet: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
   - `register(agentURI)` → agent card JSON with name, description, payout endpoint
-- [ ] Add the agent wallet in the playground (**ADD WALLET**) — keep the same wallet for the whole event; your score is tied to it
+- [x] Add the agent wallet in the playground (**ADD WALLET**) — keep the same wallet for the whole event; your score is tied to it. Done 21 Nov; the Celo checklist shows the tag seen on-chain and the ERC-8004 identity registered
 - [ ] Register with **Self Agent ID** (human-backed identity). **Required by the submission form** (field "Self Agent ID (mainnet agentId)"), even though the event page only recommends it. Needs a one-time passport scan in the Self app: https://docs.self.xyz/docs/agent-id/overview/
 
 ## Step 2 — Recruit real users (21–30 Nov, in parallel)
@@ -204,10 +204,10 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - [ ] Follow @Celo and @CeloDevs on X (required)
 - [ ] Self-evaluate with the Loops skill: "Evaluate my project against the Stablecoin Corridors judging criteria" — fix gaps before submitting
 - [ ] Submit on Loops House a day before the 7 Dec 09:00 GMT close
-- [ ] After the first tagged swap, open the Celo checklist on https://www.loops.house/agents-open-for-business/playground/submit and press **Find it**; Loops scans the agent wallet for it
+- [x] Open the Celo checklist and press **Find it**; Loops scans the agent wallet for its first tagged transaction. Done 21 Nov: it found the agent registration
 
 **Submission form fields** (`loops project fields --event agents-open-for-business` lists them with what is still missing):
-- Required: logo, project name, tagline (up to 250 characters), description, agent wallet, ERC-8004 agent ID, Self Agent ID (mainnet agentId), attribution tag, payout wallet on Celo, named user, team contacts, founder or project X handles, follow @Celo and @CeloDevs
+- Required: logo, project name, tagline (up to 250 characters), description, repository URL, walkthrough video URL, at least one screenshot, demo URL, agent wallet, ERC-8004 agent ID, Self Agent ID (mainnet agentId), attribution tag, payout wallet on Celo, named user, team contacts, founder or project X handles, follow @Celo and @CeloDevs
 - Optional: region, x402 PayTo address, buy transaction hashes, Stablecoin Corridors track details, public X post
 - Draft with `loops project create --event agents-open-for-business --name "Tranox" ...` without `--confirm` first, read the draft, then re-run with `--confirm`
 - Score it before submitting: `loops evaluate --event agents-open-for-business --sponsor stablecoin-corridors` (free)
