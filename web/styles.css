@@ -93,9 +93,11 @@ img, svg { display: block; }
 .party-amt small { font-size: .8rem; font-weight: 600; color: var(--muted-dark); margin-left: 2px; }
 .party-get { color: var(--gold); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; }
 .party-get small { color: #c9a646; }
-.party-note { color: var(--muted-dark); font-size: .85rem; margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; }
-.party-ok { color: #7fd1ae; }
-.party-ok .icon { width: 16px; height: 16px; }
+.party-note { color: var(--muted-dark); font-size: .9rem; margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; }
+.state { width: 18px; height: 18px; flex: none; border-radius: 50%; background: #2c3857; color: #9aa6bd; display: inline-grid; place-items: center; }
+.state .icon { width: 12px; height: 12px; stroke-width: 3; }
+.state-ok { background: var(--green); color: #fff; }
+.party-ok { color: #a7e3c8; font-weight: 600; }
 .bridge { text-align: center; margin-top: 32px; }
 .bridge-rate { color: #e3e9f3; font-weight: 600; font-size: .95rem; }
 .bridge-line { position: relative; height: 2px; margin: 12px 0; background: #2f3b5c; }
