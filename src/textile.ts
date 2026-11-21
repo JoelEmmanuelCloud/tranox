@@ -36,6 +36,19 @@ type SwapParams = {
   buyAmount?: bigint;
 };
 
+export class TextileError extends Error {
+  constructor(
+    readonly path: string,
+    readonly httpStatus: number,
+    readonly code: string,
+    readonly reason: string | undefined,
+    readonly requestId: string | undefined,
+    message: string,
+  ) {
+    super(`Textile ${path} ${httpStatus} ${code}${reason ? `/${reason}` : ""}: ${message}${requestId ? ` (request ${requestId})` : ""}`);
+  }
+}
+
 function headers(extra: Record<string, string> = {}): Record<string, string> {
   const h: Record<string, string> = { "content-type": "application/json", ...extra };
   if (env.textileKey) h.authorization = `Bearer ${env.textileKey}`;
@@ -47,10 +60,21 @@ async function post<T>(path: string, body: unknown, extraHeaders?: Record<string
     method: "POST",
     headers: headers(extraHeaders),
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(timeoutMs), // docs: allow 75 s for /request
+    signal: AbortSignal.timeout(timeoutMs),
   });
-  if (!res.ok) throw new Error(`Textile ${path} ${res.status}: ${await res.text()}`);
-  return res.json() as Promise<T>;
+  const text = await res.text();
+  let json: any;
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    throw new TextileError(path, res.status, "invalid_response", undefined, res.headers.get("x-request-id") ?? undefined, text.slice(0, 300));
+  }
+  if (!res.ok) {
+    const e = json.error ?? {};
+    throw new TextileError(path, res.status, e.code ?? "unknown", e.details?.reason, e.request_id ?? res.headers.get("x-request-id") ?? undefined, e.message ?? text.slice(0, 300));
+  }
+  if (!json.data) throw new TextileError(path, res.status, "invalid_response", undefined, undefined, "response has no data field");
+  return json.data as T;
 }
 
 function amountFields(p: SwapParams) {
