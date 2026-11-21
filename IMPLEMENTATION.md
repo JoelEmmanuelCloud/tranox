@@ -6,6 +6,18 @@ Celo "Agents Open for Business" hackathon · build opens 20 Nov 2026 · **submis
 
 **Tracks:** Stablecoin Corridors (primary, 1st $1,000) · Self Agent ID (stretch, 1st $700). One project can win in up to two tracks.
 
+**Stablecoin Corridors prizes and scoring:** 1st $1,000, 2nd $600, 3rd $400. Four parts, 25% each: quality of execution, clear value, early traction with tagged mainnet activity, and a named user with a real job done. Half the score is real use, so users matter as much as code.
+
+**Corridors entry requirements** (not scored in the track without all three):
+- At least one tagged Textile conversion on mainnet, as part of the product flow
+- At least one local-stablecoin payment that reaches someone outside the team
+- An ERC-8004 identity for the agent
+
+**Other tracks considered:**
+- Self Agent ID (1st $700, 2nd $300): needs Self Agent ID plus x402 payments. Scored integration 30%, idea 30%, named user 25%, real use 15%. This is Step 5
+- Altana Agent Wallets (1st $750 + 25,000 XP, 2nd $250 + 10,000 XP): the agent spends from a user's Altana wallet under a capped, revocable session key. Skipped: it changes how the agent wallet works and clashes with one agent wallet for the whole event
+- Agent Vault checkouts (1st $700, 2nd $300): not a fit for Tranox
+
 **Eligible corridors (USD₮ ↔):** cNGN (Nigeria) · IDRX (Indonesia) · wARS (Argentina) · wBRL (Brazil) · wMXN (Mexico) · wCOP (Colombia)
 
 ## Status (read first)
@@ -36,8 +48,8 @@ Celo "Agents Open for Business" hackathon · build opens 20 Nov 2026 · **submis
 ## Step 1 — Register and set up (20–22 Nov)
 
 - [x] Enroll at https://www.loops.house/agents-open-for-business
-- [ ] Create a **public GitHub repo** (e.g. `tranox`) — needed for submission and must still resolve at judging
-- [ ] Save the attribution tag in `.env`: `CELO_ATTRIBUTION_TAG=celo_37620e33107f`
+- [x] Create a **public GitHub repo** (e.g. `tranox`) — needed for submission and must still resolve at judging
+- [x] Save the attribution tag in `.env`: `CELO_ATTRIBUTION_TAG=celo_37620e33107f`
   - Lost it? Event page, the Celo button in the playground, or `loops project get`
   - Joining a team switches you to the team's tag — decide before sending any transactions
 - [ ] Install the Loops agent skill in the repo (needs Node 20.12+, 22 LTS recommended):
@@ -52,8 +64,8 @@ npx loopshouse add agents-open-for-business
   - Then ask your agent things like "Using Textile's docs, how do I build the takerProof?" or "Save this plan as an artifact called 'MVP scope'"
 - [ ] Create the agent hot wallet (fresh key, never reused); store the key in `.env`, never commit it
 - [ ] Fund the agent wallet with a little CELO for gas and a small USD₮ float
-- [ ] Install deps: `npm i viem @celo/attribution-tags dotenv`
-- [ ] Wrap the wallet client so **every** transaction appends the tag:
+- [x] Install deps: `npm i viem @celo/attribution-tags dotenv`
+- [x] Wrap the wallet client so **every** transaction appends the tag:
 
 ```ts
 import { toDataSuffix } from "@celo/attribution-tags";
@@ -74,6 +86,8 @@ const TAG = toDataSuffix(process.env.CELO_ATTRIBUTION_TAG!);
 - [ ] Each needs a Celo wallet (MiniPay or Valora) and picks a payout currency
 - [ ] Line up at least one client willing to pay small real jobs ($10–$50)
 - [ ] Agree on real tasks (logo, translation, bug fix, copywriting)
+- [ ] Keep every user independent: never send a freelancer or client gas money or USD₮, from the team or from the team's main funder. Their wallets count only if someone else funded them. New Celo users are fine
+- [ ] Note how you reached each user; the submission must say so
 
 ## Step 3 — Textile FX swap module (22–25 Nov)
 
@@ -164,7 +178,7 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - [ ] Targets: minimum 3 freelancers / 3 tagged conversions / 1 client; good 10+ / 15+ / 3+
 - [ ] Fix whatever real users hit
 - [ ] Respond to AskBots reviews (GitHub issues on 24 Nov and 4 Dec)
-- [ ] Optional: paid calls to services on https://usebuy.ai count as real use
+- [ ] Optional: paid calls to services on https://usebuy.ai count as real use (`npm install -g @celo/buy`, Node 22+)
 
 ## Step 7 — Submit (5–6 Dec)
 
@@ -173,6 +187,9 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - [ ] Celoscan links to tagged Textile conversions and payouts
 - [ ] Named users: freelancer names/handles, countries, jobs done, a short quote from one
 - [ ] 2–3 minute demo video
+- [ ] In the submission: who the users are, how you reached them, and how gas is paid (the agent wallet pays its own gas; no relayer or sponsored gas)
+- [ ] Register a payout wallet for prizes; they are paid in CELO at the USD value
+- [ ] Follow @Celo and @CeloDevs on X (required)
 - [ ] Self-evaluate with the Loops skill: "Evaluate my project against the Stablecoin Corridors judging criteria" — fix gaps before submitting
 - [ ] Submit on Loops House a day before the 7 Dec 09:00 GMT close
 
@@ -198,6 +215,8 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - No arbitrage, self-trading, or acting as a Textile maker
 - Payments must reach recipients outside the team
 - Sponsored gas is not a builder contribution
+- A user counts only if their wallet is outside the team and was not funded by the team or its main funder. Liquidity pools, routers, Textile makers and exchange wallets never count
+- Activity is reviewed before judging. Any concern is raised privately first, with 48 hours to reply
 
 ## Key dates
 
@@ -220,3 +239,10 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - ERC-8004 on Celo: https://docs.celo.org/build-on-celo/build-with-ai/8004
 - Self Agent ID: https://docs.celo.org/build-on-celo/build-with-ai/self-agent-id
 - x402 on Celo: https://x402.celo.org
+- Agent explorer: https://8004scan.io
+
+## Extras worth using
+
+- Chainstack Growth plan, free for 3 months: a faster Celo connection than the free public one (`CELO_RPC_URL`), which limits how many blocks one log query can cover
+- Celo developer office hours, Thursdays 12:00 GMT
+- Help: Telegram https://t.me/celoagenthackathons
