@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pay milestone - Tranox</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f6f7f4; color: #1d2320; }
+  main { max-width: 420px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 1.25rem; margin: 0 0 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #eef0ec; }
+  .row:last-child { border-bottom: 0; }
+  .row span:first-child { color: #5d6660; }
+  .row span:last-child { text-align: right; overflow-wrap: anywhere; }
+  .amount { font-size: 1.75rem; font-weight: 600; margin: 8px 0 16px; }
+  button { width: 100%; margin-top: 16px; padding: 14px; border: 0; border-radius: 10px; background: #1d6b4f; color: #fff; font-size: 1rem; font-weight: 600; }
+  button:disabled { background: #9aa59f; }
+  #msg { margin-top: 16px; line-height: 1.4; }
+  .error { color: #a1261b; }
+  .ok { color: #1d6b4f; }
+  a { color: #1d6b4f; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pay a milestone</h1>
+  <div class="card" id="card" hidden>
+    <div class="amount" id="amount"></div>
+    <div class="row"><span>Job</span><span id="job"></span></div>
+    <div class="row"><span>Milestone</span><span id="title"></span></div>
+    <div class="row"><span>Pay from</span><span id="from"></span></div>
+    <div class="row"><span>Pay to (Tranox agent)</span><span id="to"></span></div>
+    <div class="row"><span>Status</span><span id="status"></span></div>
+    <button id="pay" disabled>Connect wallet and pay</button>
+  </div>
+  <p id="msg"></p>
+</main>
+<script>
+(() => {
+  const USDT = "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e";
+  const CHAIN_ID = "0xa4ec";
+  const CELO = {
+    chainId: CHAIN_ID,
+    chainName: "Celo",
+    nativeCurrency: { name: "CELO", symbol: "CELO", decimals: 18 },
+    rpcUrls: ["https://forno.celo.org"],
+    blockExplorerUrls: ["https://celoscan.io"],
+  };
+  const $ = (id) => document.getElementById(id);
+  const say = (text, cls = "") => { $("msg").textContent = text; $("msg").className = cls; };
+  const pad = (hex) => hex.replace(/^0x/, "").toLowerCase().padStart(64, "0");
+  const short = (a) => a.slice(0, 6) + "..." + a.slice(-4);
+
+  function toUnits(amount, decimals) {
+    const [whole, frac = ""] = String(amount).split(".");
+    if (!/^\d+$/.test(whole) || !/^\d*$/.test(frac) || frac.length > decimals) throw new Error("Unreadable amount " + amount);
+    return BigInt(whole + frac.padEnd(decimals, "0"));
+  }
+
+  const id = new URLSearchParams(location.search).get("m") || "";
+  let info;
+  let sending = false;
+
+  async function load() {
+    if (!/^[a-z0-9]{15}$/.test(id)) return say("This payment link is not valid. Ask for a new one.", "error");
+    const res = await fetch("/api/tranox/pay/" + id);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return say(body.message || "Could not load this milestone.", "error");
+    info = body;
+    $("amount").textContent = info.amount_usdt + " USD₮";
+    $("job").textContent = info.job;
+    $("title").textContent = info.title;
+    $("from").textContent = short(info.client_wallet);
+    $("to").textContent = short(info.agent_wallet);
+    const paidOut = info.payout_status === "paid" || info.payout_status === "processing";
+    $("status").textContent = paidOut ? "Already funded and paid out" : info.status === "approved" ? "Approved, waiting for your payment" : "Not approved yet";
+    $("card").hidden = false;
+    if (paidOut) return say("This milestone is already funded. Nothing to pay.", "ok");
+    $("pay").disabled = false;
+    say("Pay once per milestone. Use the wallet ending " + info.client_wallet.slice(-4) + ".");
+  }
+
+  async function ensureCelo(eth) {
+    if ((await eth.request({ method: "eth_chainId" })) === CHAIN_ID) return;
+    try {
+      await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
+    } catch (e) {
+      if (e.code !== 4902) throw e;
+      await eth.request({ method: "wallet_addEthereumChain", params: [CELO] });
+    }
+  }
+
+  async function call(eth, data) {
+    return BigInt(await eth.request({ method: "eth_call", params: [{ to: USDT, data }, "latest"] }));
+  }
+
+  async function waitForReceipt(eth, hash) {
+    for (let i = 0; i < 60; i++) {
+      const r = await eth.request({ method: "eth_getTransactionReceipt", params: [hash] });
+      if (r) return r;
+      await new Promise((ok) => setTimeout(ok, 3000));
+    }
+    return null;
+  }
+
+  async function pay() {
+    if (sending) return;
+    const eth = window.ethereum;
+    if (!eth) return say("No wallet found. Open this link in MiniPay or a browser with a Celo wallet.", "error");
+    sending = true;
+    $("pay").disabled = true;
+    try {
+      const [account] = await eth.request({ method: "eth_requestAccounts" });
+      await ensureCelo(eth);
+      if (!account || account.toLowerCase() !== info.client_wallet.toLowerCase()) {
+        throw new Error("Connected wallet " + short(account || "none") + " is not the wallet on this job (" + short(info.client_wallet) + "). Switch wallets and try again.");
+      }
+      const decimals = Number(await call(eth, "0x313ce567"));
+      const units = toUnits(info.amount_usdt, decimals);
+      const balance = await call(eth, "0x70a08231" + pad(account));
+      if (balance < units) throw new Error("Not enough USD₮ in this wallet for " + info.amount_usdt + " USD₮.");
+      const data = "0xa9059cbb" + pad(info.agent_wallet) + pad(units.toString(16)) + info.data_suffix.replace(/^0x/, "");
+      say("Confirm the payment in your wallet.");
+      const hash = await eth.request({ method: "eth_sendTransaction", params: [{ from: account, to: USDT, data }] });
+      say("Payment sent. Waiting for Celo to confirm it...");
+      const receipt = await waitForReceipt(eth, hash);
+      const link = document.createElement("a");
+      link.href = "https://celoscan.io/tx/" + hash;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = "View on Celoscan";
+      if (!receipt) say("Still waiting for confirmation. Do not pay again. ", "");
+      else if (receipt.status === "0x1") say("Paid. The freelancer is paid in their own currency once the milestone is approved. ", "ok");
+      else { sending = false; $("pay").disabled = false; say("The payment failed and no money moved. You can try again. ", "error"); }
+      $("msg").appendChild(link);
+    } catch (e) {
+      sending = false;
+      $("pay").disabled = false;
+      say(e && e.code === 4001 ? "Payment cancelled." : (e && e.message) || String(e), "error");
+    }
+  }
+
+  $("pay").addEventListener("click", pay);
+  load().catch((e) => say("Could not load this milestone: " + e.message, "error"));
+})();
+</script>
+</body>
+</html>
