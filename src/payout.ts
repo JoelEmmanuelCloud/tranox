@@ -1,13 +1,13 @@
 import type { Address, Hex } from "viem";
 import { env, TOKENS, PAYOUT_CURRENCIES, type PayoutCurrency } from "./config.js";
-import { balanceOf, toUnits, transferTagged } from "./erc20.js";
-import { swap } from "./textile.js";
+import { balanceOf, fromUnits, toUnits, transferTagged } from "./erc20.js";
+import { preview, RetryLater, swap } from "./textile.js";
 
 export type PayoutRequest = {
   id: string;
   freelancerWallet: Address;
   currency: PayoutCurrency;
-  amountUsdt: string; // human units, e.g. "25"
+  amountUsdt: string;
 };
 
 export type PayoutResult = {
@@ -28,10 +28,19 @@ function checkGuardrails(amountUsdt: number) {
   if (spentToday + amountUsdt > env.maxDailyUsdt) throw new Error(`Daily cap ${env.maxDailyUsdt} would be exceeded`);
 }
 
-/**
- * USD₮ -> freelancer's local stablecoin on Textile FX, then pay them.
- * Both the swap and the transfer carry the attribution tag.
- */
+const SHALLOW_RETRY_MS = 10 * 60_000;
+
+export async function ensureDepth(currency: PayoutCurrency, sellToken: Address, buyToken: Address, sellAmount: bigint) {
+  const p = await preview({ sellToken, buyToken, sellAmount });
+  if (p.status === "preview" && p.buyAmount && BigInt(p.buyAmount) > 0n) return;
+  const need = await fromUnits(sellToken, sellAmount);
+  const depth = p.availableSellAmount ? `${await fromUnits(sellToken, BigInt(p.availableSellAmount))} USDT` : "no";
+  throw new RetryLater(
+    `No liquidity: ${currency} corridor has ${depth} depth, payout needs ${need} USDT (${p.reason ?? p.status})`,
+    p.retryAfterMs ?? SHALLOW_RETRY_MS,
+  );
+}
+
 export async function executePayout(p: PayoutRequest): Promise<PayoutResult> {
   if (!PAYOUT_CURRENCIES.includes(p.currency)) throw new Error(`Unsupported currency ${p.currency}`);
   const amount = Number(p.amountUsdt);
@@ -41,11 +50,12 @@ export async function executePayout(p: PayoutRequest): Promise<PayoutResult> {
   const target = TOKENS[p.currency];
   const sellAmount = await toUnits(usdt, p.amountUsdt);
 
+  await ensureDepth(p.currency, usdt, target, sellAmount);
+
   const before = await balanceOf(target);
   const { quote, swapTx, approvalTx } = await swap({ sellToken: usdt, buyToken: target, sellAmount });
   const after = await balanceOf(target);
 
-  // Pay out what actually arrived (not the quoted figure) to avoid over-sending
   const received = after - before;
   if (received <= 0n) throw new Error(`Swap ${swapTx} delivered no ${p.currency}`);
 
