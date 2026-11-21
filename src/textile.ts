@@ -61,6 +61,12 @@ export class TextileError extends Error {
   }
 }
 
+export class RetryLater extends Error {
+  constructor(message: string, readonly retryAfterMs?: number) {
+    super(message);
+  }
+}
+
 function headers(extra: Record<string, string> = {}): Record<string, string> {
   const h: Record<string, string> = { "content-type": "application/json", ...extra };
   if (env.textileKey) h.authorization = `Bearer ${env.textileKey}`;
@@ -116,11 +122,11 @@ async function takerProof() {
   return { nonce, issuedAt, signature };
 }
 
-function noQuoteMessage(q: Liquidity & { status: string }) {
+function noQuote(q: Liquidity & { status: string }) {
   const parts = [`No quote: ${q.status}`, q.reason];
   if (q.availableSellAmount) parts.push(`available ${q.availableSellAmount}`);
   if (q.retryAfterMs) parts.push(`retry in ${q.retryAfterMs}ms`);
-  return parts.filter(Boolean).join(" ");
+  return new RetryLater(parts.filter(Boolean).join(" "), q.retryAfterMs);
 }
 
 export async function preview(p: SwapParams): Promise<Preview> {
@@ -153,10 +159,10 @@ export async function cancel(q: FirmQuote) {
 
 export async function swap(p: SwapParams): Promise<{ quote: FirmQuote; swapTx: Hex; approvalTx?: Hex }> {
   const q = await requestQuote(p);
-  if (q.status !== "quoted" || !q.quote || !q.transactions) throw new Error(noQuoteMessage(q));
+  if (q.status !== "quoted" || !q.quote || !q.transactions) throw noQuote(q);
   if (!q.transactions.swap) {
     await cancel(q).catch(() => {});
-    throw new Error(`No quote: route ${q.route ?? "unknown"} has no swap transaction and is not supported`);
+    throw new RetryLater(`No quote: route ${q.route ?? "unknown"} has no swap transaction and is not supported`);
   }
   if (getAddress(q.quote.taker) !== agent().address) {
     throw new Error(`Quote ${q.rfqId} is bound to ${q.quote.taker}, not the agent wallet`);
@@ -179,7 +185,7 @@ export async function swap(p: SwapParams): Promise<{ quote: FirmQuote; swapTx: H
 
   if (Date.now() >= expiresAtMs) {
     await cancel(q).catch(() => {});
-    throw new Error(`Quote ${q.rfqId} expired before swap, re-request`);
+    throw new RetryLater(`Quote ${q.rfqId} expired before swap, re-request`);
   }
 
   const s = q.transactions.swap;
