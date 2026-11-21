@@ -7,7 +7,7 @@
  */
 import { erc20Abi, toHex, type Address, type Hex } from "viem";
 import { CHAIN_ID, env } from "./config.js";
-import { account, publicClient, sendTagged } from "./wallet.js";
+import { agent, publicClient, sendTagged } from "./wallet.js";
 
 type PreparedTx = { to: Address; data: Hex; value: string; chainId: number };
 
@@ -64,6 +64,7 @@ function amountFields(p: SwapParams) {
 async function takerProof() {
   const nonce = toHex(crypto.getRandomValues(new Uint8Array(32)));
   const issuedAt = Date.now(); // milliseconds
+  const account = agent();
   const signature = await account.signTypedData({
     domain: { name: "Textile Taker Control", version: "1", chainId: CHAIN_ID },
     types: {
@@ -97,7 +98,7 @@ export async function requestQuote(p: SwapParams): Promise<FirmQuote> {
     sellToken: p.sellToken,
     buyToken: p.buyToken,
     ...amountFields(p),
-    taker: account.address,
+    taker: agent().address,
     ...(env.textileKey ? {} : { takerProof: await takerProof() }),
   });
 }
@@ -126,7 +127,7 @@ export async function swap(p: SwapParams): Promise<{ quote: FirmQuote; swapTx: H
     address: p.sellToken,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [account.address, q.quote.reactor],
+    args: [agent().address, q.quote.reactor],
   });
   if (allowance < BigInt(q.quote.takerPays) && q.transactions.approval) {
     const a = q.transactions.approval;
