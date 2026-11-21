@@ -1,4 +1,4 @@
-import { api, busyButton, connect, el, errorText, icon, idFromQuery, money, notice, payUsdt, pill, short, signText, STATUS, txLink, waitForReceipt } from "./app.js";
+import { api, busyButton, connect, el, errorText, icon, idFromQuery, money, notice, payUsdt, pill, short, signText, txLink, waitForReceipt } from "./app.js";
 import { hydrateIcons } from "./icons.js";
 
 const head = document.getElementById("head");
@@ -89,7 +89,6 @@ function milestoneCard(m, index) {
     : null;
   return el("article", { class: "ms fade-in", style: "animation-delay:" + index * 40 + "ms" },
     el("div", { class: "ms-top" },
-      el("div", { class: "ms-icon " + m.status }, icon((STATUS[m.status] || STATUS.pending).icon, "icon-lg")),
       el("div", { class: "ms-main" }, el("div", { class: "ms-title", text: m.title }), pill(m.status)),
       el("div", { class: "ms-amt tnum" }, el("b", { text: money(m.amount_usdt) + " USD₮" }), el("span", { text: local })),
     ),

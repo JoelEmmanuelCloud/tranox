@@ -1,4 +1,4 @@
-import { api, el, errorText, icon, idFromQuery, money, notice, pill, STATUS, txLink } from "./app.js";
+import { api, el, errorText, icon, idFromQuery, money, notice, pill, txLink } from "./app.js";
 import { hydrateIcons } from "./icons.js";
 
 const head = document.getElementById("head");
@@ -24,7 +24,6 @@ function payoutCard(p, rate, currency, index) {
   }
   return el("article", { class: "ms fade-in", style: "animation-delay:" + index * 40 + "ms" },
     el("div", { class: "ms-top" },
-      el("div", { class: "ms-icon " + p.status }, icon((STATUS[p.status] || STATUS.pending).icon, "icon-lg")),
       el("div", { class: "ms-main" },
         el("div", { class: "ms-title", text: p.milestone || "Payout" }),
         p.job ? el("div", { class: "ms-sub", text: p.job }) : null,
