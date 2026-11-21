@@ -2,7 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Tranox",
   "description": "Pays freelancers in their local stablecoin (cNGN, IDRX, wARS, wBRL, wMXN, wCOP) on Celo, converting the client's USD₮ via Textile FX.",
-  "image": "",
+  "image": "https://raw.githubusercontent.com/JoelEmmanuelCloud/tranox/main/web/logo.png",
   "services": [
     {
       "name": "web",
