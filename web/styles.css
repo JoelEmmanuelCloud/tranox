@@ -87,8 +87,6 @@ img, svg { display: block; }
 .route-body { display: grid; grid-template-columns: 1fr minmax(200px, 1.2fr) 1fr; align-items: start; gap: 24px; }
 .party { min-width: 0; }
 .party-end { text-align: right; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; font-size: .85rem; font-weight: 700; color: #dbe2ee; background: #24304d; margin-bottom: 12px; }
-.avatar-gold { color: var(--gold-ink); background: var(--gold); }
 .party-name { color: #e3e9f3; font-weight: 600; }
 .party-city { color: var(--muted-dark); font-size: .85rem; margin-bottom: 10px; }
 .party-amt { color: #e3e9f3; font-size: 1.6rem; font-weight: 700; line-height: 1.15; white-space: nowrap; }
@@ -98,7 +96,7 @@ img, svg { display: block; }
 .party-note { color: var(--muted-dark); font-size: .85rem; margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; }
 .party-ok { color: #7fd1ae; }
 .party-ok .icon { width: 16px; height: 16px; }
-.bridge { text-align: center; margin-top: 84px; }
+.bridge { text-align: center; margin-top: 32px; }
 .bridge-rate { color: #e3e9f3; font-weight: 600; font-size: .95rem; }
 .bridge-line { position: relative; height: 2px; margin: 12px 0; background: #2f3b5c; }
 .bridge-line::after { content: ""; position: absolute; right: -1px; top: -4px; width: 8px; height: 8px; border-top: 2px solid #2f3b5c; border-right: 2px solid #2f3b5c; transform: rotate(45deg); }
