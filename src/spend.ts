@@ -1,13 +1,41 @@
 import { getAddress, parseAbiItem, type Address } from "viem";
 import { publicClient } from "./wallet.js";
 
-const transferEvent = parseAbiItem("event Transfer(address indexed from, address indexed to, uint256 value)");
+export const transferEvent = parseAbiItem("event Transfer(address indexed from, address indexed to, uint256 value)");
 const LOG_CHUNK = 10_000n;
 
 type Cursor = { token: Address; owner: Address; sinceMs: number; nextBlock: bigint; total: bigint };
 let cursor: Cursor | undefined;
 
-async function firstBlockAtOrAfter(timestampSec: bigint): Promise<bigint> {
+export async function scanBlocks<T>(
+  fromBlock: bigint,
+  toBlock: bigint,
+  fetch: (from: bigint, to: bigint) => Promise<T[]>,
+  onChunk?: (items: T[], to: bigint) => void,
+): Promise<T[]> {
+  const all: T[] = [];
+  let chunk = LOG_CHUNK;
+  let next = fromBlock;
+  while (next <= toBlock) {
+    const to = next + chunk - 1n < toBlock ? next + chunk - 1n : toBlock;
+    let items: T[];
+    try {
+      items = await fetch(next, to);
+    } catch (e) {
+      if (chunk > 1n && /max results|too many|range|size limit/i.test(e instanceof Error ? e.message : String(e))) {
+        chunk /= 2n;
+        continue;
+      }
+      throw e;
+    }
+    all.push(...items);
+    onChunk?.(items, to);
+    next = to + 1n;
+  }
+  return all;
+}
+
+export async function firstBlockAtOrAfter(timestampSec: bigint): Promise<bigint> {
   const latest = await publicClient.getBlock();
   if (latest.timestamp < timestampSec) return latest.number + 1n;
   const behind = (latest.timestamp - timestampSec) * 2n + 100n;
@@ -30,22 +58,16 @@ export async function sentSince(token: Address, owner: Address, sinceMs: number)
     const nextBlock = await firstBlockAtOrAfter(BigInt(Math.floor(sinceMs / 1000)));
     cursor = { token: t, owner: o, sinceMs, nextBlock, total: 0n };
   }
+  const c = cursor;
   const latest = await publicClient.getBlockNumber();
-  let chunk = LOG_CHUNK;
-  while (cursor.nextBlock <= latest) {
-    const toBlock = cursor.nextBlock + chunk - 1n < latest ? cursor.nextBlock + chunk - 1n : latest;
-    let logs;
-    try {
-      logs = await publicClient.getLogs({ address: t, event: transferEvent, args: { from: o }, fromBlock: cursor.nextBlock, toBlock });
-    } catch (e) {
-      if (chunk > 1n && /max results|too many|range/i.test(e instanceof Error ? e.message : String(e))) {
-        chunk /= 2n;
-        continue;
-      }
-      throw e;
-    }
-    cursor.total += logs.reduce((sum, l) => sum + (l.args.value ?? 0n), 0n);
-    cursor.nextBlock = toBlock + 1n;
-  }
-  return cursor.total;
+  await scanBlocks(
+    c.nextBlock,
+    latest,
+    (fromBlock, toBlock) => publicClient.getLogs({ address: t, event: transferEvent, args: { from: o }, fromBlock, toBlock }),
+    (logs, to) => {
+      c.total += logs.reduce((sum, l) => sum + (l.args.value ?? 0n), 0n);
+      c.nextBlock = to + 1n;
+    },
+  );
+  return c.total;
 }
