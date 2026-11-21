@@ -127,8 +127,13 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - Approval is refused if the freelancer has no valid wallet or currency
   - New milestones must start `pending`; once approved, `status`, `amount_usdt` and `job` are locked
   - A unique index allows at most one payout per milestone
+- [x] Client funds check (`src/funding.ts`): the client sends USD₮ straight to the agent wallet from the `client_wallet` set on the job
+  - Approval is refused if the job has no valid `client_wallet`, or if it is the freelancer's own wallet. The hook copies it to the payout in lowercase, with `funded_since` set to the job's creation time
+  - Before a milestone payout starts, the worker adds up all USD₮ this client wallet has sent the agent wallet since its earliest `funded_since`. That total must cover this payout plus all of the client's `paid` and `processing` payouts. If not, the payout stays `queued`, its `error` says how much has arrived and how much is needed, and it is checked again every 2 minutes. It never gives up waiting for funds
+  - When funds are confirmed the worker sets `funded_at`. The `MAX_QUEUE_HOURS` wait for liquidity counts from then, not from approval
+  - `swap:test` payouts (`source = manual`) skip the check
 - [ ] Agent worker picks up `queued` payouts:
-  1. Confirm the client's USD₮ has arrived (client wallet or GoWork escrow)
+  1. ~~Confirm the client's USD₮ has arrived~~ Done 20 Nov, see the funds check above
   2. Get a Textile quote into the freelancer's currency
   3. Approve + swap (tagged)
   4. Transfer the local stablecoin to the freelancer (tagged)
