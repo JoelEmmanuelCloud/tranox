@@ -37,8 +37,8 @@ onRecordUpdate((e) => {
   if (clientWallet === wallet.toLowerCase()) {
     throw new BadRequestError("Job " + job.id + " client_wallet is the freelancer's own wallet.");
   }
-  if (!(amount > 0)) {
-    throw new BadRequestError("Milestone amount_usdt must be greater than 0.");
+  if (!(amount >= 1)) {
+    throw new BadRequestError("Milestone amount_usdt must be at least 1 USDT, the smallest swap Textile FX quotes.");
   }
 
   e.record.set("approved_at", new Date().toISOString());
