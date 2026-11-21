@@ -4,10 +4,20 @@
   "description": "Pays freelancers in their local stablecoin (cNGN, IDRX, wARS, wBRL, wMXN, wCOP) on Celo, converting the client's USD₮ via Textile FX.",
   "image": "",
   "services": [
-    { "name": "web", "endpoint": "https://github.com/JoelEmmanuelCloud/tranox" }
+    {
+      "name": "web",
+      "endpoint": "https://github.com/JoelEmmanuelCloud/tranox"
+    }
   ],
   "x402Support": false,
   "active": true,
-  "registrations": [],
-  "supportedTrust": ["reputation"]
+  "registrations": [
+    {
+      "agentId": 10085,
+      "agentRegistry": "eip155:42220:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    }
+  ],
+  "supportedTrust": [
+    "reputation"
+  ]
 }
