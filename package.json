@@ -16,7 +16,6 @@
     "worker": "tsx src/worker.ts",
     "typecheck": "tsc --noEmit",
     "pb": "tsx scripts/pocketbase.ts",
-    "gate": "tsx scripts/gate.ts",
     "web": "tsx src/web.ts"
   },
   "dependencies": {
