@@ -1,6 +1,8 @@
-import type { Address, Hex } from "viem";
+import { formatUnits, type Address, type Hex } from "viem";
 import { env, TOKENS, PAYOUT_CURRENCIES, type PayoutCurrency } from "./config.js";
-import { balanceOf, fromUnits, toUnits, transferTagged } from "./erc20.js";
+import { balanceOf, decimals, fromUnits, toUnits, transferTagged } from "./erc20.js";
+import { sentSince } from "./spend.js";
+import { agent } from "./wallet.js";
 import { preview, RetryLater, swap } from "./textile.js";
 
 export type PayoutRequest = {
@@ -37,16 +39,18 @@ export function syncSpentToday(amountUsdt: number) {
   spentToday = amountUsdt;
 }
 
-function checkGuardrails(amountUsdt: number) {
+async function checkGuardrails(amountUsdt: number) {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== dayKey) { dayKey = today; spentToday = 0; }
   if (!Number.isFinite(amountUsdt) || amountUsdt <= 0) throw new Error(`Payout amount must be a positive number, got ${amountUsdt}`);
   if (amountUsdt > env.maxPayoutUsdt) throw new Error(`Payout ${amountUsdt} exceeds per-payout cap ${env.maxPayoutUsdt}`);
   if (amountUsdt > env.maxDailyUsdt) throw new Error(`Payout ${amountUsdt} exceeds daily cap ${env.maxDailyUsdt} and can never be sent`);
-  if (spentToday + amountUsdt > env.maxDailyUsdt) {
+  const onChain = Number(formatUnits(await sentSince(TOKENS.USDT, agent().address, utcDayStart().getTime()), await decimals(TOKENS.USDT)));
+  const spent = Math.max(spentToday, onChain);
+  if (spent + amountUsdt > env.maxDailyUsdt) {
     const waitMs = msUntilNextUtcDay();
     throw new DailyCapReached(
-      `Daily cap ${env.maxDailyUsdt} USDT reached (${spentToday} sent today, this payout needs ${amountUsdt}), waiting ${Math.ceil(waitMs / 60_000)} min until 00:00 UTC`,
+      `Daily cap ${env.maxDailyUsdt} USDT reached (${spent} sent today, this payout needs ${amountUsdt}), waiting ${Math.ceil(waitMs / 60_000)} min until 00:00 UTC`,
       waitMs,
     );
   }
@@ -68,7 +72,7 @@ export async function ensureDepth(currency: PayoutCurrency, sellToken: Address, 
 export async function executePayout(p: PayoutRequest): Promise<PayoutResult> {
   if (!PAYOUT_CURRENCIES.includes(p.currency)) throw new Error(`Unsupported currency ${p.currency}`);
   const amount = Number(p.amountUsdt);
-  checkGuardrails(amount);
+  await checkGuardrails(amount);
 
   const usdt = TOKENS.USDT;
   const target = TOKENS[p.currency];
