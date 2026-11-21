@@ -87,6 +87,20 @@ export function wallet() {
   return window.ethereum;
 }
 
+const CELO_MAINNET = 42220;
+const CELO_TESTNET = 11142220;
+
+function chainNumber(value) {
+  if (typeof value === "number") return value;
+  const text = String(value || "").trim();
+  return /^0x[0-9a-f]+$/i.test(text) ? parseInt(text, 16) : Number(text);
+}
+
+function wrongNetwork(chain) {
+  if (chain === CELO_TESTNET) return "Your wallet is on the Celo test network. In MiniPay, open Settings, Developer Settings and turn off Use Testnet, then try again.";
+  return "Your wallet is on network " + chain + ", not Celo. Switch your wallet to Celo and try again.";
+}
+
 async function ask(eth, step, args) {
   try {
     return await eth.request(args);
@@ -102,13 +116,16 @@ async function ask(eth, step, args) {
 export async function connect(expected) {
   const eth = wallet();
   const [account] = await ask(eth, "connecting the wallet", { method: "eth_requestAccounts" });
-  if ((await ask(eth, "reading the network", { method: "eth_chainId" })) !== CHAIN_ID) {
+  const chain = chainNumber(await ask(eth, "reading the network", { method: "eth_chainId" }));
+  if (chain !== CELO_MAINNET) {
     try {
       await ask(eth, "switching to Celo", { method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
     } catch (e) {
-      if (e.code !== 4902) throw e;
-      await ask(eth, "adding Celo", { method: "wallet_addEthereumChain", params: [CELO] });
+      if (e.code === 4001) throw e;
+      if (e.code === 4902) await ask(eth, "adding Celo", { method: "wallet_addEthereumChain", params: [CELO] });
+      else throw new Error(wrongNetwork(chain));
     }
+    if (chainNumber(await ask(eth, "reading the network", { method: "eth_chainId" })) !== CELO_MAINNET) throw new Error(wrongNetwork(chain));
   }
   if (expected && (!account || account.toLowerCase() !== expected.toLowerCase())) {
     throw new Error("Connected wallet " + short(account || "none") + " is not the client wallet on this job (" + short(expected) + "). Switch wallets and try again.");
