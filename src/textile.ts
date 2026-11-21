@@ -1,37 +1,49 @@
-/**
- * Textile FX RFQ v2 client (keyless taker flow).
- * Docs: https://fx-docs.textilecredit.com/api/v2/rfq.html
- *       https://fx-docs.textilecredit.com/api/v2/authentication.html
- *
- * Flow: preview -> request (firm quote) -> approve if needed -> swap -> submit hash.
- */
-import { erc20Abi, toHex, type Address, type Hex } from "viem";
+import { erc20Abi, getAddress, toHex, type Address, type Hex } from "viem";
 import { CHAIN_ID, env } from "./config.js";
 import { agent, publicClient, sendTagged } from "./wallet.js";
 
 type PreparedTx = { to: Address; data: Hex; value: string; chainId: number };
 
-export type FirmQuote = {
+type Liquidity = {
+  reason?: "no_makers_online" | "no_restricted_liquidity" | "no_valid_quote" | string;
+  availableSellAmount?: string;
+  availableBuyAmount?: string;
+  reservedUntil?: string;
+  retryAfterMs?: number;
+};
+
+export type Preview = Liquidity & {
+  status: "preview" | "no_quote";
+  sellAmount?: string;
+  buyAmount?: string;
+  feeAmount?: string;
+  takerPays?: string;
+  rateRay?: string;
+};
+
+export type FirmQuote = Liquidity & {
   rfqId: string;
   claimToken: string;
-  status: "quoted" | "no_quote" | string;
-  reason?: string;
+  status: "quoted" | "no_quote";
+  route?: string;
   quote?: {
     sellAmount: string;
     buyAmount: string;
     feeAmount: string;
     takerPays: string;
     rateRay: string;
-    expiresAt: number | string;
+    expiresAt: string;
+    orderDeadline: string;
     reactor: Address;
+    spender?: Address;
+    taker: Address;
   };
-  transactions?: { approval?: PreparedTx; swap: PreparedTx };
+  transactions?: { approval: PreparedTx; swap?: PreparedTx };
 };
 
 type SwapParams = {
   sellToken: Address;
   buyToken: Address;
-  /** Exactly one of sellAmount / buyAmount, in base units. */
   sellAmount?: bigint;
   buyAmount?: bigint;
 };
@@ -84,11 +96,10 @@ function amountFields(p: SwapParams) {
   return p.sellAmount !== undefined ? { sellAmount: p.sellAmount.toString() } : { buyAmount: p.buyAmount!.toString() };
 }
 
-/** EIP-712 TakerControl v1 proof — needed for keyless callers. */
 async function takerProof() {
-  const nonce = toHex(crypto.getRandomValues(new Uint8Array(32)));
-  const issuedAt = Date.now(); // milliseconds
   const account = agent();
+  const nonce = toHex(crypto.getRandomValues(new Uint8Array(32)));
+  const issuedAt = Date.now();
   const signature = await account.signTypedData({
     domain: { name: "Textile Taker Control", version: "1", chainId: CHAIN_ID },
     types: {
@@ -105,9 +116,15 @@ async function takerProof() {
   return { nonce, issuedAt, signature };
 }
 
-/** Indicative price only — nothing reserved. Use to check corridor liquidity. */
-export async function preview(p: SwapParams) {
-  return post<unknown>("/rfq/preview", {
+function noQuoteMessage(q: Liquidity & { status: string }) {
+  const parts = [`No quote: ${q.status}`, q.reason];
+  if (q.availableSellAmount) parts.push(`available ${q.availableSellAmount}`);
+  if (q.retryAfterMs) parts.push(`retry in ${q.retryAfterMs}ms`);
+  return parts.filter(Boolean).join(" ");
+}
+
+export async function preview(p: SwapParams): Promise<Preview> {
+  return post<Preview>("/rfq/preview", {
     chainId: CHAIN_ID,
     sellToken: p.sellToken,
     buyToken: p.buyToken,
@@ -115,7 +132,6 @@ export async function preview(p: SwapParams) {
   });
 }
 
-/** Firm quote bound to the agent wallet. */
 export async function requestQuote(p: SwapParams): Promise<FirmQuote> {
   return post<FirmQuote>("/rfq/request", {
     chainId: CHAIN_ID,
@@ -135,41 +151,40 @@ export async function cancel(q: FirmQuote) {
   return post(`/rfq/${q.rfqId}/cancel`, {}, { "X-Rfq-Claim": q.claimToken }, 30_000);
 }
 
-/**
- * Get a firm quote and execute it. Every tx is tagged.
- * Returns the swap tx hash and the amount of buyToken received (per quote).
- */
 export async function swap(p: SwapParams): Promise<{ quote: FirmQuote; swapTx: Hex; approvalTx?: Hex }> {
   const q = await requestQuote(p);
-  if (q.status !== "quoted" || !q.quote || !q.transactions) {
-    throw new Error(`No quote: ${q.status} ${q.reason ?? ""}`);
+  if (q.status !== "quoted" || !q.quote || !q.transactions) throw new Error(noQuoteMessage(q));
+  if (!q.transactions.swap) {
+    await cancel(q).catch(() => {});
+    throw new Error(`No quote: route ${q.route ?? "unknown"} has no swap transaction and is not supported`);
+  }
+  if (getAddress(q.quote.taker) !== agent().address) {
+    throw new Error(`Quote ${q.rfqId} is bound to ${q.quote.taker}, not the agent wallet`);
   }
 
-  // 1. Approve the reactor if allowance is short (plain ERC-20 approve, tagged)
+  const expiresAtMs = Date.parse(q.quote.expiresAt);
+  if (Number.isNaN(expiresAtMs)) throw new Error(`Quote ${q.rfqId} has unreadable expiresAt ${q.quote.expiresAt}`);
+
   let approvalTx: Hex | undefined;
   const allowance = await publicClient.readContract({
     address: p.sellToken,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [agent().address, q.quote.reactor],
+    args: [agent().address, q.quote.spender ?? q.quote.reactor],
   });
-  if (allowance < BigInt(q.quote.takerPays) && q.transactions.approval) {
+  if (allowance < BigInt(q.quote.takerPays)) {
     const a = q.transactions.approval;
-    approvalTx = await sendTagged({ to: a.to, data: a.data, value: BigInt(a.value || "0") }); // waits for receipt
+    approvalTx = await sendTagged({ to: a.to, data: a.data, value: BigInt(a.value || "0") });
   }
 
-  // 2. Quote must still be valid
-  const expiresAtMs = Number(q.quote.expiresAt) < 1e12 ? Number(q.quote.expiresAt) * 1000 : Number(q.quote.expiresAt);
   if (Date.now() >= expiresAtMs) {
     await cancel(q).catch(() => {});
-    throw new Error("Quote expired before swap — re-request");
+    throw new Error(`Quote ${q.rfqId} expired before swap, re-request`);
   }
 
-  // 3. Send the prepared batch swap (tagged)
   const s = q.transactions.swap;
   const swapTx = await sendTagged({ to: s.to, data: s.data, value: BigInt(s.value || "0") });
 
-  // 4. Report the hash to Textile
   await submitHash(q, swapTx);
   return { quote: q, swapTx, approvalTx };
 }
