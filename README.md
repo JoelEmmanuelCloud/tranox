@@ -181,3 +181,5 @@ Textile FX depth changes with the makers online. On 20 Nov 2026, for 5 USD₮: c
 - Self Agent ID: not registered yet
 - Tagged transactions:
   - Agent registration, tag `celo_37620e33107f` verified: [0xe2f7143f...](https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e)
+  - Client payment from MiniPay through the job page, 0.05 USD₮, tagged by the page: [0x3d6f3415...](https://celoscan.io/tx/0x3d6f3415eb3201bde488c4de31f638a5a15e73d03e141d07cbc8b92abda67c45)
+  - First payout, 21 Nov 2026: 1 USD₮ converted on Textile FX to 18,350.35 IDRX and sent to a freelancer wallet, all tagged. USD₮ approval [0x7e4fbbe9...](https://celoscan.io/tx/0x7e4fbbe99cf24a9269834821e4ebd8959e638717079161024fb72ea4c94ac82e), swap [0xeabac923...](https://celoscan.io/tx/0xeabac9235657087c5219b0df07e445e578d25da9401a8bb4b55036ba16bdf993), payout [0x2ea6b85d...](https://celoscan.io/tx/0x2ea6b85d3ac9907c79ab61674cb21dd47a3109567b7bc8aeaa9ef20413a56178)

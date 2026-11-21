@@ -110,7 +110,7 @@ Docs: https://fx-docs.textilecredit.com/api/v2/rfq.html — keyless works (no AP
 - [ ] Check `now < quote.expiresAt`, else re-request
 - [ ] Send `transactions.swap` from the agent wallet (tagged)
 - [ ] `POST /v2/rfq/{id}/submit` with `{ "txHash": "0x…" }` and header `X-Rfq-Claim`
-- [ ] Test: one real 1 USD₮ swap on mainnet to a real freelancer, in a currency with makers online (`npm run quote -- 1`), confirm the tag with `verifyTx`
+- [x] Test: one real 1 USD₮ swap on mainnet to a real freelancer, in a currency with makers online (`npm run quote -- 1`), confirm the tag with `verifyTx`. Done 21 Nov with `swap:test`: 1 USD₮ to 18,350.35 IDRX, approval, swap and payout all tagged, gas 0.084 CELO total. Textile's firm quotes need at least 1 USD₮; the preview quotes smaller amounts, so a preview is not proof a size will fill
 
 Token addresses (Celo mainnet):
 
@@ -176,7 +176,8 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - Textile 429, 500, 502, 503, timeouts and dropped connections: stays `queued`. A 429 waits the `Retry-After` time when sent, else 60 s
   - Swap reverted on-chain (for example after the order deadline): nothing was swapped, so it stays `queued` with a fresh quote next time. After 3 reverted swaps the payout fails, so a broken swap cannot keep spending gas
   - All of these give up after `MAX_QUEUE_HOURS`. Other Textile errors (400, 401, 403, 404, 409) fail the payout at once, as the docs say they need a fix, not a retry
-- [ ] **Milestone: first real mainnet payout to a freelancer by 28 Nov**
+- [x] **Milestone: first real mainnet payout to a freelancer by 28 Nov.** Done 21 Nov (see the test above). The client side was also proven on mainnet the same day: a MiniPay payment through the job page carried the tag, the signed approval queued the payout, and the funds check saw the payment. A full client-funded milestone of at least 1 USD₮ is still to run with the first real client
+  - MiniPay notes from that run: it refuses `wallet_switchEthereumChain` and data reads (`eth_call`, receipts) with HTTP 403, so the job page reads the network as a number, never asks to switch on Celo, gets USD₮ decimals and transaction status from the Tranox server, and names the wallet step when something fails. Open pages in MiniPay through Settings, Developer Settings, Load test page, with Use Testnet off
 
 ## Step 5 — Self Agent ID + x402 (29 Nov–3 Dec, stretch)
 
