@@ -125,6 +125,9 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   4. Transfer the local stablecoin to the freelancer (tagged)
   5. Write tx hashes back, set status `paid`
 - [ ] Guardrails: max per payout, max per day, allowlist of freelancer wallets
+  - [x] Per-payout cap (`MAX_PAYOUT_USDT`) fails the payout
+  - [x] Daily cap (`MAX_DAILY_USDT`, UTC day) holds the payout until 00:00 UTC. "Spent today" is the highest of: USD₮ the agent wallet sent on-chain today, today's `paid` plus `processing` payouts in PocketBase, and this process's own count. Any USD₮ leaving the agent wallet counts, including `swap:test` and manual transfers
+  - [ ] Allowlist of freelancer wallets
 - [ ] Retries: `no_quote` → retry later; expired quote → re-request
 - [ ] **Milestone: first real mainnet payout to a freelancer by 28 Nov**
 
