@@ -69,7 +69,7 @@ npx loopshouse add agents-open-for-business
   - Re-run any time to pick up the latest sponsors and deadlines
   - Then ask your agent things like "Using Textile's docs, how do I build the takerProof?" or "Save this plan as an artifact called 'MVP scope'"
 - [x] Create the agent hot wallet (fresh key, never reused); store the key in `.env`, never commit it. Done 21 Nov: `0xB1eF0cEa020B273E1c30370a787B9447DfE14706`. Back up the key in a password manager
-- [ ] Fund the agent wallet on the Celo network: about 0.5 CELO for gas (registration about 0.05 CELO, one full payout about 0.09 CELO at 21 Nov gas prices) and 1 USD₮ for the test payout. Milestone payouts need no agent USD₮: the client's payment is what gets converted
+- [x] Funded 21 Nov (22.28 CELO, 3 USD₮). Fund the agent wallet on the Celo network: about 0.5 CELO for gas (registration about 0.05 CELO, one full payout about 0.09 CELO at 21 Nov gas prices) and 1 USD₮ for the test payout. Milestone payouts need no agent USD₮: the client's payment is what gets converted
 - [x] Install deps: `npm i viem @celo/attribution-tags dotenv`
 - [x] Wrap the wallet client so **every** transaction appends the tag:
 
@@ -80,7 +80,7 @@ const TAG = toDataSuffix(process.env.CELO_ATTRIBUTION_TAG!);
 // for contract calls: data = concat([encodedCalldata, TAG])
 ```
 
-- [ ] Register the agent on the **ERC-8004 Identity Registry** from the agent wallet
+- [x] Register the agent on the **ERC-8004 Identity Registry** from the agent wallet. Done 21 Nov: agent ID `10085`, tx https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e, tag verified, gas 0.0408 CELO
   - Celo mainnet: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
   - `register(agentURI)` → agent card JSON with name, description, payout endpoint
 - [ ] Add the agent wallet in the playground (**ADD WALLET**) — keep the same wallet for the whole event; your score is tied to it

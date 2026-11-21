@@ -166,6 +166,7 @@ Textile FX depth changes with the makers online. On 20 Nov 2026, for 5 USD₮: c
 
 - Attribution tag: `celo_37620e33107f`
 - Agent wallet: [`0xB1eF0cEa020B273E1c30370a787B9447DfE14706`](https://celoscan.io/address/0xB1eF0cEa020B273E1c30370a787B9447DfE14706)
-- ERC-8004 agent ID: not registered yet
+- ERC-8004 agent ID: `10085` on the Celo identity registry, registered 21 Nov 2026 ([transaction](https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e), [8004scan](https://8004scan.io))
 - Self Agent ID: not registered yet
-- Tagged transactions: none yet; Celoscan links will be listed here
+- Tagged transactions:
+  - Agent registration, tag `celo_37620e33107f` verified: [0xe2f7143f...](https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e)
