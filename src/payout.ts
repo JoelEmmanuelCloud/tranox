@@ -24,7 +24,17 @@ let dayKey = new Date().toISOString().slice(0, 10);
 export class DailyCapReached extends RetryLater {}
 
 function msUntilNextUtcDay(now = new Date()): number {
-  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now.getTime();
+  return utcDayStart(now).getTime() + 86_400_000 - now.getTime();
+}
+
+export function utcDayStart(now = new Date()): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+export function syncSpentToday(amountUsdt: number) {
+  if (!Number.isFinite(amountUsdt) || amountUsdt < 0) throw new Error(`Spent today must be a non-negative number, got ${amountUsdt}`);
+  dayKey = new Date().toISOString().slice(0, 10);
+  spentToday = amountUsdt;
 }
 
 function checkGuardrails(amountUsdt: number) {
