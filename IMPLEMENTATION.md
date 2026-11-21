@@ -116,6 +116,7 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
   - `status` (select: queued, processing, paid, failed)
   - `rfq_id`, `approval_tx`, `swap_tx`, `payout_tx`, `received_units`, `error` (text)
   - `created` (autodate), used to give up on payouts that wait longer than `MAX_QUEUE_HOURS` for liquidity
+  - `paid_at` (date), set when paid; the worker adds up today's `paid` and `processing` amounts on every check so `MAX_DAILY_USDT` holds across restarts
 - [ ] Hook on milestone approval → create a `payouts` record with status `queued`
 - [ ] Agent worker picks up `queued` payouts:
   1. Confirm the client's USD₮ has arrived (client wallet or GoWork escrow)

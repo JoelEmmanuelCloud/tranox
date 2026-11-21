@@ -1,7 +1,7 @@
 import PocketBase from "pocketbase";
 import type { Address } from "viem";
 import { env, type PayoutCurrency } from "./config.js";
-import { DailyCapReached, executePayout } from "./payout.js";
+import { DailyCapReached, executePayout, syncSpentToday, utcDayStart } from "./payout.js";
 import { RetryLater, TextileError } from "./textile.js";
 
 const pb = new PocketBase(env.pbUrl);
@@ -28,7 +28,18 @@ function queuedSince(rec: { id: string; created?: string }): number {
   return firstSeen.get(rec.id)!;
 }
 
+async function loadSpentToday() {
+  const counted = await pb.collection("payouts").getFullList({
+    filter: pb.filter('(status = "paid" && paid_at >= {:start}) || status = "processing"', { start: utcDayStart() }),
+    fields: "amount_usdt",
+  });
+  const total = counted.reduce((sum, r) => sum + Number(r.amount_usdt), 0);
+  if (!Number.isFinite(total)) throw new Error("A paid or processing payout has an unreadable amount_usdt");
+  syncSpentToday(total);
+}
+
 async function tick() {
+  await loadSpentToday();
   const queued = await pb.collection("payouts").getFullList({ filter: 'status = "queued"', sort: "created" });
   const now = Date.now();
   for (const rec of queued) {
@@ -43,6 +54,7 @@ async function tick() {
       });
       await pb.collection("payouts").update(rec.id, {
         status: "paid",
+        paid_at: new Date().toISOString(),
         rfq_id: r.rfqId,
         approval_tx: r.approvalTx ?? "",
         swap_tx: r.swapTx,
