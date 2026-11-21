@@ -26,7 +26,7 @@ Celo "Agents Open for Business" hackathon · build opens 20 Nov 2026 · **submis
 
 **Next up, in order:**
 
-1. PocketBase: add `wallet_address` + `payout_currency` to freelancer profiles; create the `payouts` collection (schema at top of `src/worker.ts`); add the hook that queues a payout on milestone approval
+1. PocketBase: add `wallet_address` + `payout_currency` to freelancer profiles; create the `payouts` collection (fields in Step 4); add the hook that queues a payout on milestone approval
 2. Fix `login()` in `src/worker.ts` if GoWork runs PocketBase ≥ 0.23 (`_superusers` auth)
 3. ~~Verify `npm run quote -- 10` against the live Textile API~~ Done 20 Nov. Celo 42220 is live. Responses come in a `data` field, `expiresAt` is an ISO date, approvals can target `quote.spender`. Liquidity seen on 20 Nov (USD₮ in): cNGN about 42,660 and IDRX about 54,640; wBRL about 9.80, wCOP about 7.65, wARS about 0.72; wMXN had no makers online. Recheck with `npm run quote -- 5` before each payout in the thin corridors.
 4. Then the remaining unchecked items below
@@ -110,7 +110,12 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 ## Step 4 — GoWork payout flow (24–28 Nov)
 
 - [ ] PocketBase: add `wallet_address` and `payout_currency` fields to freelancer profiles
-- [ ] PocketBase: add a `payouts` collection (job, freelancer, amount_usdt, currency, rfq_id, swap_tx, payout_tx, status)
+- [ ] PocketBase: add a `payouts` collection that `src/worker.ts` reads and writes:
+  - `job` (relation), `freelancer` (relation), `freelancer_wallet` (text)
+  - `currency` (select: cNGN, IDRX, wARS, wBRL, wMXN, wCOP), `amount_usdt` (number)
+  - `status` (select: queued, processing, paid, failed)
+  - `rfq_id`, `approval_tx`, `swap_tx`, `payout_tx`, `received_units`, `error` (text)
+  - `created` (autodate), used to give up on payouts that wait longer than `MAX_QUEUE_HOURS` for liquidity
 - [ ] Hook on milestone approval → create a `payouts` record with status `queued`
 - [ ] Agent worker picks up `queued` payouts:
   1. Confirm the client's USD₮ has arrived (client wallet or GoWork escrow)
