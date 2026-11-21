@@ -185,6 +185,8 @@ export async function swap(p: SwapParams): Promise<{ quote: FirmQuote; swapTx: H
   const s = q.transactions.swap;
   const swapTx = await sendTagged({ to: s.to, data: s.data, value: BigInt(s.value || "0") });
 
-  await submitHash(q, swapTx);
+  await submitHash(q, swapTx).catch((e) =>
+    console.error(`swap ${swapTx} landed but reporting it to Textile failed:`, e instanceof Error ? e.message : e),
+  );
   return { quote: q, swapTx, approvalTx };
 }
