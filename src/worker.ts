@@ -86,8 +86,11 @@ async function loadSpentToday() {
   syncSpentToday(total);
 }
 
-async function recordedTxs(): Promise<Set<string>> {
-  const recs = await pb.collection("payouts").getFullList({ filter: 'swap_tx != "" || payout_tx != ""', fields: "swap_tx,payout_tx" });
+async function recordedTxs(excludeId: string): Promise<Set<string>> {
+  const recs = await pb.collection("payouts").getFullList({
+    filter: pb.filter('id != {:id} && (swap_tx != "" || payout_tx != "")', { id: excludeId }),
+    fields: "swap_tx,payout_tx",
+  });
   const known = new Set<string>();
   for (const r of recs) for (const h of [r.swap_tx, r.payout_tx]) if (h) known.add(String(h).toLowerCase());
   return known;
@@ -105,7 +108,7 @@ async function resolveOnChain(rec: RecordModel): Promise<Resolution> {
     freelancerWallet: rec.freelancer_wallet as Address,
     currency,
     startedBlock: BigInt(started),
-    knownTxs: await recordedTxs(),
+    knownTxs: await recordedTxs(rec.id),
   });
 
   if (r.kind === "paid") {
