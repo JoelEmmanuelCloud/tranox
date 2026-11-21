@@ -1,7 +1,7 @@
 import PocketBase from "pocketbase";
 import type { Address } from "viem";
 import { env, type PayoutCurrency } from "./config.js";
-import { executePayout } from "./payout.js";
+import { DailyCapReached, executePayout } from "./payout.js";
 import { RetryLater, TextileError } from "./textile.js";
 
 const pb = new PocketBase(env.pbUrl);
@@ -57,7 +57,7 @@ async function tick() {
       const msg = e instanceof Error ? e.message : String(e);
       const delay = retryDelay(e);
       const waitedHours = (Date.now() - queuedSince(rec)) / 3_600_000;
-      if (delay !== undefined && waitedHours < env.maxQueueHours) {
+      if (delay !== undefined && (e instanceof DailyCapReached || waitedHours < env.maxQueueHours)) {
         nextAttempt.set(rec.id, Date.now() + delay);
         await pb.collection("payouts").update(rec.id, { status: "queued", error: msg });
         console.error(`payout ${rec.id} requeued, next try in ${Math.round(delay / 1000)}s: ${msg}`);

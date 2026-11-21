@@ -21,11 +21,25 @@ export type PayoutResult = {
 let spentToday = 0;
 let dayKey = new Date().toISOString().slice(0, 10);
 
+export class DailyCapReached extends RetryLater {}
+
+function msUntilNextUtcDay(now = new Date()): number {
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now.getTime();
+}
+
 function checkGuardrails(amountUsdt: number) {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== dayKey) { dayKey = today; spentToday = 0; }
+  if (!Number.isFinite(amountUsdt) || amountUsdt <= 0) throw new Error(`Payout amount must be a positive number, got ${amountUsdt}`);
   if (amountUsdt > env.maxPayoutUsdt) throw new Error(`Payout ${amountUsdt} exceeds per-payout cap ${env.maxPayoutUsdt}`);
-  if (spentToday + amountUsdt > env.maxDailyUsdt) throw new Error(`Daily cap ${env.maxDailyUsdt} would be exceeded`);
+  if (amountUsdt > env.maxDailyUsdt) throw new Error(`Payout ${amountUsdt} exceeds daily cap ${env.maxDailyUsdt} and can never be sent`);
+  if (spentToday + amountUsdt > env.maxDailyUsdt) {
+    const waitMs = msUntilNextUtcDay();
+    throw new DailyCapReached(
+      `Daily cap ${env.maxDailyUsdt} USDT reached (${spentToday} sent today, this payout needs ${amountUsdt}), waiting ${Math.ceil(waitMs / 60_000)} min until 00:00 UTC`,
+      waitMs,
+    );
+  }
 }
 
 const SHALLOW_RETRY_MS = 10 * 60_000;
