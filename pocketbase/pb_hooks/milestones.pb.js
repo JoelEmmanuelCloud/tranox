@@ -30,6 +30,13 @@ onRecordUpdate((e) => {
   if (!currency) {
     throw new BadRequestError("Freelancer " + freelancer.id + " has no payout_currency.");
   }
+  const clientWallet = job.getString("client_wallet").toLowerCase();
+  if (!/^0x[0-9a-f]{40}$/.test(clientWallet)) {
+    throw new BadRequestError("Job " + job.id + " has no valid client_wallet.");
+  }
+  if (clientWallet === wallet.toLowerCase()) {
+    throw new BadRequestError("Job " + job.id + " client_wallet is the freelancer's own wallet.");
+  }
   if (!(amount > 0)) {
     throw new BadRequestError("Milestone amount_usdt must be greater than 0.");
   }
@@ -45,6 +52,8 @@ onRecordUpdate((e) => {
     payout.set("freelancer", freelancer.id);
     payout.set("source", "milestone");
     payout.set("freelancer_wallet", wallet);
+    payout.set("client_wallet", clientWallet);
+    payout.set("funded_since", job.getDateTime("created"));
     payout.set("currency", currency);
     payout.set("amount_usdt", amount);
     payout.set("status", "queued");
