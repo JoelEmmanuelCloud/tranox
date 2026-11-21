@@ -5,3 +5,4 @@ dist/
 .DS_Store
 pocketbase/bin/
 pocketbase/pb_data/
+.agents/
