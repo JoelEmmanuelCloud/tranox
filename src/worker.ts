@@ -3,22 +3,29 @@ import { env, type PayoutCurrency } from "./config.js";
 import { lease, login, pb, resolveOnChain } from "./db.js";
 import { checkFunding } from "./funding.js";
 import { DailyCapReached, executePayout, syncSpentToday, utcDayStart } from "./payout.js";
-import { RetryLater, TextileError } from "./textile.js";
+import { isTransient, RetryLater, SwapReverted } from "./textile.js";
 import { publicClient } from "./wallet.js";
 
 const POLL_MS = 15_000;
 const DEFAULT_RETRY_MS = 60_000;
 const FUNDING_RETRY_MS = 2 * 60_000;
+const MAX_SWAP_REVERTS = 3;
 
 const nextAttempt = new Map<string, number>();
 const firstSeen = new Map<string, number>();
+const swapReverts = new Map<string, number>();
 
 let stopping = false;
 let wake: (() => void) | undefined;
 
-function retryDelay(e: unknown): number | undefined {
+function retryDelay(id: string, e: unknown): number | undefined {
+  if (e instanceof SwapReverted) {
+    const count = (swapReverts.get(id) ?? 0) + 1;
+    swapReverts.set(id, count);
+    if (count >= MAX_SWAP_REVERTS) return undefined;
+  }
   if (e instanceof RetryLater) return e.retryAfterMs ?? DEFAULT_RETRY_MS;
-  if (e instanceof TextileError && e.httpStatus === 429) return DEFAULT_RETRY_MS;
+  if (isTransient(e)) return e.retryAfterMs ?? DEFAULT_RETRY_MS;
   return undefined;
 }
 
@@ -34,6 +41,7 @@ function queuedSince(rec: { id: string; created?: string; funded_at?: string }):
 function forget(id: string) {
   nextAttempt.delete(id);
   firstSeen.delete(id);
+  swapReverts.delete(id);
 }
 
 async function loadSpentToday() {
@@ -113,7 +121,7 @@ async function tick() {
       console.log(`paid ${rec.id}: swap ${r.swapTx} payout ${r.payoutTx}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      const delay = retryDelay(e);
+      const delay = retryDelay(rec.id, e);
       const waitedHours = (Date.now() - queuedSince(rec)) / 3_600_000;
       if (delay !== undefined && (e instanceof DailyCapReached || waitedHours < env.maxQueueHours)) {
         nextAttempt.set(rec.id, Date.now() + delay);
@@ -132,7 +140,10 @@ async function tick() {
       }
       if (outcome === "nothing_sent") {
         forget(rec.id);
-        const reason = delay !== undefined ? `Gave up after ${env.maxQueueHours}h waiting: ${msg}` : msg;
+        const reason =
+          delay !== undefined ? `Gave up after ${env.maxQueueHours}h waiting: ${msg}`
+          : e instanceof SwapReverted ? `Gave up after ${MAX_SWAP_REVERTS} reverted swaps: ${msg}`
+          : msg;
         await pb.collection("payouts").update(rec.id, { status: "failed", error: reason });
         console.error(`payout ${rec.id} failed: ${reason}`);
       } else {
