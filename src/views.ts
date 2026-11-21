@@ -52,6 +52,19 @@ async function ratePerUsdt(currency: PayoutCurrency): Promise<string | null> {
   return perUsdt;
 }
 
+function cachedRate(currency: PayoutCurrency): string | null {
+  const hit = rateCache.get(currency);
+  if (hit && Date.now() - hit.at < RATE_TTL_MS) return hit.perUsdt;
+  ratePerUsdt(currency).catch(() => {});
+  return null;
+}
+
+export async function rateView(currency: string) {
+  const c = asCurrency(currency);
+  if (!c) throw new ViewError(404, "Unknown currency");
+  return { currency: c, rate_per_usdt: await ratePerUsdt(c) };
+}
+
 function publicStatus(milestone: RecordModel, payout?: RecordModel): string {
   if (!payout) return milestone.status === "approved" ? "queued" : "pending";
   if (payout.status === "queued") return String(payout.error ?? "").startsWith("Waiting for client funds") ? "waiting_funds" : "queued";
@@ -87,7 +100,7 @@ export async function jobView(id: string) {
     agent_wallet: agent().address,
     usdt: TOKENS.USDT,
     data_suffix: toDataSuffix(env.tag()),
-    rate_per_usdt: currency ? await ratePerUsdt(currency) : null,
+    rate_per_usdt: currency ? cachedRate(currency) : null,
     milestones: await Promise.all(
       milestones.map(async (m) => ({
         id: m.id,
@@ -110,7 +123,7 @@ export async function freelancerView(id: string) {
   });
   return {
     freelancer: { name: freelancer.name, country: freelancer.country || null, currency },
-    rate_per_usdt: currency ? await ratePerUsdt(currency) : null,
+    rate_per_usdt: currency ? cachedRate(currency) : null,
     payouts: await Promise.all(
       payouts.map(async (p) => {
         const m = p.expand?.milestone as RecordModel | undefined;

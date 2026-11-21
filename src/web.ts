@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { approvalChallenge, approveMilestone, freelancerView, jobView, ViewError } from "./views.js";
+import { approvalChallenge, approveMilestone, freelancerView, jobView, rateView, ViewError } from "./views.js";
 
 const PORT = 8091;
 const ROOT = join(import.meta.dirname, "..", "web");
@@ -93,6 +93,8 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     if (m) return json(res, 200, await jobView(m[1]));
     m = path.match(/^\/api\/freelancers\/([a-z0-9]{15})$/);
     if (m) return json(res, 200, await freelancerView(m[1]));
+    m = path.match(/^\/api\/rates\/(cNGN|IDRX|wARS|wBRL|wMXN|wCOP)$/);
+    if (m) return json(res, 200, await rateView(m[1]));
   }
 
   if (method === "POST") {
