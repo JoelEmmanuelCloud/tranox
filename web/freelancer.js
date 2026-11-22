@@ -88,7 +88,7 @@ function render(data) {
   const pending = data.payouts.filter((p) => p.status !== "paid" && p.status !== "failed").reduce((s, p) => s + p.amount_usdt, 0);
   const fact = (ic, k, v) => el("div", { class: "fact" }, el("div", { class: "k" }, icon(ic), k), el("div", { class: "v tnum", text: v }));
   head.replaceChildren(
-    el("section", { class: "balance fade-in", "aria-label": "Your earnings" },
+    el("section", { class: "balance frame fade-in", "aria-label": "Your earnings" },
       el("div", { class: "label" }, icon("user"), "Hi " + f.name + ", you have received"),
       el("div", { class: "big tnum", text: totalText }),
       el("div", { class: "sub", text: paid.length + " of " + data.payouts.length + " payouts paid" + (pending ? " · " + money(pending) + " USD₮ on the way" : "") }),
