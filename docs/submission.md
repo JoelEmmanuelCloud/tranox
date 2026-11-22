@@ -39,7 +39,7 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 - **Self Agent ID (mainnet agentId):** `210`, registered 22 Nov 2026 in the Self Agent Registry on Celo mainnet (`0xaC3DF9ABf80d0F5c020C06B04Cced27763355944`). Badge key `0x25f2102457d7255C4B38967592c1259c88e145b6`, owned by a team member's wallet after a passport check that shares only "over 18" and "not on a sanctions list". The badge key only proves a human is behind the agent; all payments still go through the one agent wallet.
 - **Attribution tag:** `celo_37620e33107f`
 - **Payout wallet on Celo:** `0x6F25FC9CB7D0a0bf92dcE5514103232fa38ba2Bc` (the founder's MiniPay wallet, separate from the agent wallet)
-- **Named user:** Barok, a freelancer in Indonesia, outside the team. For the "Project documentation" milestone the client paid 1 USD₮ from MiniPay on the job page and approved it with a signature; about a minute later Barok received 18,343.62 IDRX in his wallet. Across two payouts he has received 36,693.97 IDRX, all with public, tagged transactions. The client on this job was the founder paying for real work. Quote from Barok: "Receiving the money was relatively easy."
+- **Named user:** Barok, a freelancer in Indonesia, outside the team. For the "Project documentation" milestone the client paid 1 USD₮ from MiniPay on the job page and approved it with a signature; about a minute later Barok received 18,343.62 IDRX in his wallet. Across two payouts he has received 36,693.97 IDRX, all with public, tagged transactions. The client on this job was the founder paying for real work. Quote from Barok: "Receiving the money was relatively easy." His wallet in MetaMask on Celo showing the 36,693.97 IDRX: `docs/img/barok-wallet-idrx.jpg`.
 - **Team contacts:** Joel Emmanuel (founder). Email and Telegram are entered in the submission form only, not in this public repo.
 - **Founder or project handles on X:** [@joelCloud899799](https://x.com/joelCloud899799)
 - **Follow @Celo and @CeloDevs on X:** yes, confirmed by the founder on 22 Nov 2026
@@ -61,4 +61,4 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 
 ## How users were reached
 
-**TODO:** how Barok and the clients were found (for example: personal network, freelancer communities), in one or two sentences.
+Barok is a freelancer from my network in Indonesia.
