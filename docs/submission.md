@@ -42,7 +42,7 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 - **Named user:** **TODO**. Draft once the first paid job is done: "Barok, a freelancer in **TODO country**, was paid **TODO amount** for **TODO job** by **TODO client**. He received it in **TODO currency** in his phone wallet minutes after approval, instead of waiting days for a wire and paying **TODO** in fees." Plus a one-line quote from him.
 - **Team contacts:** Joel Emmanuel (founder). Email and Telegram are entered in the submission form only, not in this public repo.
 - **Founder or project handles on X:** [@joelCloud899799](https://x.com/joelCloud899799)
-- **Follow @Celo and @CeloDevs on X:** **TODO** (confirm)
+- **Follow @Celo and @CeloDevs on X:** yes, confirmed by the founder on 22 Nov 2026
 
 ## Stablecoin Corridors track details
 
