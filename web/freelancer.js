@@ -88,6 +88,7 @@ function render(data) {
   const pending = data.payouts.filter((p) => p.status !== "paid" && p.status !== "failed").reduce((s, p) => s + p.amount_usdt, 0);
   const fact = (k, v) => el("div", { class: "fact" }, el("div", { class: "v tnum", text: v }), el("div", { class: "k", text: k }));
   head.replaceChildren(
+    el("span", { class: "glow", "aria-hidden": "true" }),
     el("section", { class: "balance fade-in", "aria-label": "Your earnings" },
       el("div", { class: "label" }, icon("user"), "Hi " + f.name + ", you have received"),
       el("div", { class: "big tnum", text: totalText }),

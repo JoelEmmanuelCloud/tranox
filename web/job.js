@@ -107,6 +107,7 @@ function render() {
   const pct = total ? Math.round((paidUsdt / total) * 100) : 0;
   const fact = (k, v) => el("div", { class: "fact" }, el("div", { class: "v tnum", text: v }), el("div", { class: "k", text: k }));
   head.replaceChildren(
+    el("span", { class: "glow", "aria-hidden": "true" }),
     el("section", { class: "balance fade-in", "aria-label": "Job summary" },
       el("div", { class: "label" }, icon("receipt"), job.job.client + " · " + job.job.title),
       el("div", { class: "big tnum", text: money(total) + " USD₮" }),
