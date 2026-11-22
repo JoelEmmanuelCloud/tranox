@@ -50,6 +50,10 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
   - USD₮ approval: https://celoscan.io/tx/0x7e4fbbe99cf24a9269834821e4ebd8959e638717079161024fb72ea4c94ac82e
   - Swap on Textile FX: https://celoscan.io/tx/0xeabac9235657087c5219b0df07e445e578d25da9401a8bb4b55036ba16bdf993
   - Payout to the freelancer: https://celoscan.io/tx/0x2ea6b85d3ac9907c79ab61674cb21dd47a3109567b7bc8aeaa9ef20413a56178
+- **First full client-funded milestone, 22 Nov 2026 ("Project documentation", 1 USD₮, paid to Barok in IDRX):** the client paid from MiniPay on the job page, approved with a signature, and the agent checked the funds, swapped and paid, all tagged
+  - Client payment: https://celoscan.io/tx/0x8c0c53322b1595fa8a54349824a608d304dbcd2baee5a3d91db5fd5a2940308d
+  - Swap on Textile FX (1 USD₮ to 18,343.62 IDRX): https://celoscan.io/tx/0x8bd24a0b0ab51c9899284bf34c51aeb8ba564a8966c2ce70867ee4a8aa955b74
+  - Payout to Barok: https://celoscan.io/tx/0x6d0de440990be68dc635c5dea5f1860a5274874f4fe9c988d50746b67474a75d
 - **Client payment through the job page, tagged by the page:** https://celoscan.io/tx/0x3d6f3415eb3201bde488c4de31f638a5a15e73d03e141d07cbc8b92abda67c45
 - **Gas:** no relayer and no sponsored gas. The agent pays its own gas in CELO for registration, approvals, swaps and payouts. Clients pay their own network fee in MiniPay when they pay a milestone.
 
