@@ -25,7 +25,7 @@ export async function hasPendingTx(address: Address): Promise<boolean> {
   return pending > latest;
 }
 
-async function receivedInSwap(tx: Hex, target: Address, self: Address): Promise<bigint> {
+export async function receivedInSwap(tx: Hex, target: Address, self: Address): Promise<bigint> {
   const receipt = await publicClient.getTransactionReceipt({ hash: tx });
   if (receipt.status !== "success") return 0n;
   const logs = parseEventLogs({ abi: [transferEvent], logs: receipt.logs });

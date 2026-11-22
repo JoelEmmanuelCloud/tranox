@@ -4,6 +4,7 @@ import { balanceOf, decimals, fromUnits, toUnits, transferTagged } from "./erc20
 import { sentSince } from "./spend.js";
 import { agent } from "./wallet.js";
 import { preview, RetryLater, swap } from "./textile.js";
+import { receivedInSwap } from "./recover.js";
 
 export type PayoutRequest = {
   id: string;
@@ -94,11 +95,8 @@ export async function executePayout(p: PayoutRequest): Promise<PayoutResult> {
 
   await ensureDepth(p.currency, usdt, target, sellAmount);
 
-  const before = await balanceOf(target);
   const { quote, swapTx, approvalTx } = await swap({ sellToken: usdt, buyToken: target, sellAmount });
-  const after = await balanceOf(target);
-
-  const received = after - before;
+  const received = await receivedInSwap(swapTx, target, agent().address);
   if (received <= 0n) throw new Error(`Swap ${swapTx} delivered no ${p.currency}`);
 
   const payoutTx = await transferTagged(target, to, received);
