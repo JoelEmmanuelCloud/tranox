@@ -21,6 +21,8 @@ const IMAGES: Record<string, string> = {
   "/icon-192.png": "image/png",
   "/logo.png": "image/png",
   "/og.jpg": "image/jpeg",
+  "/how-1200.webp": "image/webp",
+  "/how-720.webp": "image/webp",
 };
 const HEADERS: Record<string, string> = {
   "content-security-policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
