@@ -6,6 +6,10 @@
   "services": [
     {
       "name": "web",
+      "endpoint": "https://tranoxweb.com"
+    },
+    {
+      "name": "source",
       "endpoint": "https://github.com/JoelEmmanuelCloud/tranox"
     }
   ],
