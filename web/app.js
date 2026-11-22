@@ -51,7 +51,9 @@ export function short(a) {
 
 export function money(n, max = 2) {
   const v = Number(n);
-  return Number.isFinite(v) ? v.toLocaleString(undefined, { maximumFractionDigits: max }) : String(n);
+  if (!Number.isFinite(v)) return String(n);
+  const min = Number.isInteger(v) ? 0 : max;
+  return v.toLocaleString(undefined, { minimumFractionDigits: min, maximumFractionDigits: max });
 }
 
 export function txLink(hash, text) {
