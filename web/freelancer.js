@@ -1,4 +1,4 @@
-import { api, busyButton, connect, el, errorText, icon, idFromQuery, money, notice, pill, short, txLink } from "./app.js";
+import { api, busyButton, connect, el, errorText, icon, idFromQuery, money, notice, pill, txLink } from "./app.js";
 import { hydrateIcons } from "./icons.js";
 
 const head = document.getElementById("head");
@@ -72,9 +72,7 @@ function walletHelp(data) {
     : null;
   return el("section", { class: "panel help fade-in", "aria-label": "Where to see your money" },
     el("h2", { text: "Where to see your money" }),
-    el("p", { text: "Your payouts arrive as " + t.symbol + ", a local stablecoin on Celo, in the wallet " + short(data.wallet || "") + ". MiniPay only shows USD₮, USDC and USDm, so " + t.symbol + " won't appear there." }),
-    el("p", { text: "To see and spend it, open the same wallet in an app that lets you add tokens, such as MetaMask on the Celo network, and add " + t.symbol + " with the button or the token address." }),
-    el("div", { class: "help-row" }, el("span", { text: "Token address" }), el("code", { text: short(t.address) })),
+    el("p", { text: "MiniPay only shows USD₮, USDC and USDm, so your " + t.symbol + " won't appear there. Open this wallet in MetaMask on Celo and add " + t.symbol + " to see and spend it." }),
     actions,
     balance,
     box,
@@ -90,7 +88,6 @@ function render(data) {
   const pending = data.payouts.filter((p) => p.status !== "paid" && p.status !== "failed").reduce((s, p) => s + p.amount_usdt, 0);
   const fact = (ic, k, v) => el("div", { class: "fact" }, el("div", { class: "k" }, icon(ic), k), el("div", { class: "v tnum", text: v }));
   head.replaceChildren(
-    el("span", { class: "spotlight", "aria-hidden": "true" }),
     el("section", { class: "balance fade-in", "aria-label": "Your earnings" },
       el("div", { class: "label" }, icon("user"), "Hi " + f.name + ", you have received"),
       el("div", { class: "big tnum", text: totalText }),
