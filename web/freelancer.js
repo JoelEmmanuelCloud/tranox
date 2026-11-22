@@ -1,4 +1,4 @@
-import { api, el, errorText, icon, idFromQuery, money, notice, pill, txLink } from "./app.js";
+import { api, busyButton, connect, el, errorText, icon, idFromQuery, money, notice, pill, short, txLink } from "./app.js";
 import { hydrateIcons } from "./icons.js";
 
 const head = document.getElementById("head");
@@ -36,6 +36,51 @@ function payoutCard(p, rate, currency, index) {
   );
 }
 
+function walletHelp(data) {
+  const t = data.token;
+  if (!t) return null;
+  const box = el("div", { class: "notice" });
+  const actions = el("div", { class: "help-actions" });
+  if (window.ethereum) {
+    const add = el("button", { class: "btn btn-dark", type: "button" }, icon("wallet"), "Add " + t.symbol + " to my wallet");
+    add.addEventListener("click", async () => {
+      const restore = busyButton(add, "Waiting for wallet");
+      try {
+        const { eth } = await connect();
+        const added = await eth.request({ method: "wallet_watchAsset", params: { type: "ERC20", options: { address: t.address, symbol: t.symbol, decimals: t.decimals } } });
+        notice(box, added ? "ok" : "info", added ? t.symbol + " is now listed in your wallet." : "Your wallet did not add " + t.symbol + ". Add it by hand with the token address below.");
+      } catch (e) {
+        notice(box, "error", "This wallet can't add tokens from a page. Add " + t.symbol + " by hand with the token address below. (" + errorText(e) + ")");
+      } finally {
+        restore();
+      }
+    });
+    actions.append(add);
+  }
+  const copy = el("button", { class: "btn btn-soft", type: "button" }, icon("receipt"), "Copy token address");
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(t.address);
+      notice(box, "ok", "Token address copied: " + t.address);
+    } catch {
+      notice(box, "info", "Token address: " + t.address);
+    }
+  });
+  actions.append(copy);
+  const balance = data.wallet
+    ? el("a", { class: "chip-link", href: "https://celoscan.io/token/" + t.address + "?a=" + data.wallet, target: "_blank", rel: "noopener" }, icon("external"), "See your " + t.symbol + " balance on Celoscan")
+    : null;
+  return el("section", { class: "panel help fade-in", "aria-label": "Where to see your money" },
+    el("h2", { text: "Where to see your money" }),
+    el("p", { text: "Your payouts arrive as " + t.symbol + ", a local stablecoin on Celo, in the wallet " + short(data.wallet || "") + ". MiniPay only shows USD₮, USDC and USDm, so " + t.symbol + " won't appear there." }),
+    el("p", { text: "To see and spend it, open the same wallet in an app that lets you add tokens, such as MetaMask on the Celo network, and add " + t.symbol + " with the button or the token address." }),
+    el("div", { class: "help-row" }, el("span", { text: "Token address" }), el("code", { text: short(t.address) })),
+    actions,
+    balance,
+    box,
+  );
+}
+
 function render(data) {
   const f = data.freelancer;
   const paid = data.payouts.filter((p) => p.status === "paid");
@@ -57,6 +102,7 @@ function render(data) {
     ),
   );
   app.replaceChildren(
+    walletHelp(data),
     el("div", { class: "list-title" }, el("h2", { text: "Payouts" }), el("span", { text: data.payouts.length + " total" })),
     ...(data.payouts.length
       ? data.payouts.map((p, i) => payoutCard(p, data.rate_per_usdt, f.currency, i))
