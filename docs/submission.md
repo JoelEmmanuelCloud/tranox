@@ -40,8 +40,8 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 - **Attribution tag:** `celo_37620e33107f`
 - **Payout wallet on Celo:** **TODO** (a team wallet for prizes, not the agent wallet)
 - **Named user:** **TODO**. Draft once the first paid job is done: "Barok, a freelancer in **TODO country**, was paid **TODO amount** for **TODO job** by **TODO client**. He received it in **TODO currency** in his phone wallet minutes after approval, instead of waiting days for a wire and paying **TODO** in fees." Plus a one-line quote from him.
-- **Team contacts:** **TODO** (name, email, Telegram and X handle for each member)
-- **Founder or project handles on X:** **TODO**
+- **Team contacts:** Joel Emmanuel (founder). Email and Telegram are entered in the submission form only, not in this public repo.
+- **Founder or project handles on X:** [@joelCloud899799](https://x.com/joelCloud899799)
 - **Follow @Celo and @CeloDevs on X:** **TODO** (confirm)
 
 ## Stablecoin Corridors track details
