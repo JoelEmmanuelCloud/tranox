@@ -23,9 +23,12 @@ const IMAGES: Record<string, string> = {
   "/og.jpg": "image/jpeg",
   "/how-1200.webp": "image/webp",
   "/how-720.webp": "image/webp",
+  "/fonts/archivo.woff2": "font/woff2",
+  "/fonts/plex-mono-400.woff2": "font/woff2",
+  "/fonts/plex-mono-500.woff2": "font/woff2",
 };
 const HEADERS: Record<string, string> = {
-  "content-security-policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  "content-security-policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   "x-content-type-options": "nosniff",
   "referrer-policy": "no-referrer",
   "cache-control": "no-store",
