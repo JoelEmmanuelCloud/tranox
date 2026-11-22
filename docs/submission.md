@@ -38,7 +38,7 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 - **ERC-8004 agent ID:** `10085` (registration: https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e)
 - **Self Agent ID (mainnet agentId):** `210`, registered 22 Nov 2026 in the Self Agent Registry on Celo mainnet (`0xaC3DF9ABf80d0F5c020C06B04Cced27763355944`). Badge key `0x25f2102457d7255C4B38967592c1259c88e145b6`, owned by a team member's wallet after a passport check that shares only "over 18" and "not on a sanctions list". The badge key only proves a human is behind the agent; all payments still go through the one agent wallet.
 - **Attribution tag:** `celo_37620e33107f`
-- **Payout wallet on Celo:** **TODO** (a team wallet for prizes, not the agent wallet)
+- **Payout wallet on Celo:** `0x6F25FC9CB7D0a0bf92dcE5514103232fa38ba2Bc` (the founder's MiniPay wallet, separate from the agent wallet)
 - **Named user:** **TODO**. Draft once the first paid job is done: "Barok, a freelancer in **TODO country**, was paid **TODO amount** for **TODO job** by **TODO client**. He received it in **TODO currency** in his phone wallet minutes after approval, instead of waiting days for a wire and paying **TODO** in fees." Plus a one-line quote from him.
 - **Team contacts:** Joel Emmanuel (founder). Email and Telegram are entered in the submission form only, not in this public repo.
 - **Founder or project handles on X:** [@joelCloud899799](https://x.com/joelCloud899799)
