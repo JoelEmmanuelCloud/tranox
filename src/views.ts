@@ -73,6 +73,10 @@ export async function rateView(currency: string) {
   return { currency: c, rate_per_usdt: await ratePerUsdt(c) };
 }
 
+function agentAddress() {
+  return env.agentAddress() ?? agent().address;
+}
+
 function publicStatus(milestone: RecordModel, payout?: RecordModel): string {
   if (!payout) return milestone.status === "approved" ? "queued" : "pending";
   if (payout.status === "queued") return String(payout.error ?? "").startsWith("Waiting for client funds") ? "waiting_funds" : "queued";
@@ -105,7 +109,7 @@ export async function jobView(id: string) {
     job: { id: job.id, title: job.title, client: job.client },
     freelancer: { name: freelancer.name, country: freelancer.country || null, currency },
     client_wallet: job.client_wallet || null,
-    agent_wallet: agent().address,
+    agent_wallet: agentAddress(),
     usdt: TOKENS.USDT,
     usdt_decimals: await decimals(TOKENS.USDT),
     data_suffix: toDataSuffix(env.tag()),

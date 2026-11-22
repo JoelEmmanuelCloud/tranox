@@ -35,6 +35,11 @@ export const env = {
   pbEmail: process.env.POCKETBASE_ADMIN_EMAIL ?? "",
   pbPassword: process.env.POCKETBASE_ADMIN_PASSWORD ?? "",
   agentCardUri: process.env.AGENT_CARD_URI ?? "",
+  agentAddress: () => {
+    const v = process.env.AGENT_ADDRESS ?? "";
+    if (!isAddress(v, { strict: false })) return undefined;
+    return getAddress(v);
+  },
 };
 
 export const TOKENS = {
