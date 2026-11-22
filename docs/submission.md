@@ -1,0 +1,58 @@
+# Tranox: submission draft
+
+Draft answers for the Loops House form, Agents Open for Business. Items marked **TODO** need information only the team has.
+
+## Basics
+
+- **Project name:** Tranox
+- **Tagline (under 250 characters):** Get paid abroad, spend it at home. Clients pay a milestone in USD₮; Tranox converts it on Textile FX and pays the freelancer naira, rupiah, pesos or reais on Celo, minutes after the work is approved.
+- **Repository:** https://github.com/JoelEmmanuelCloud/tranox
+- **Demo URL:** https://tranoxweb.com
+- **Walkthrough video:** **TODO** (script in `docs/demo-script.md`)
+- **Screenshots:** home page, client job page, freelancer payout page (from tranoxweb.com)
+- **Logo:** `web/logo.png`
+- **Tracks:** Stablecoin Corridors (1st, 2nd and 3rd place bounties)
+
+## Description
+
+Freelancers in Nigeria, Indonesia and Latin America often work for clients abroad who pay in dollars. The money arrives days later through a bank wire or a payout platform, fees come off at each step, and the freelancer still has to change dollars into the money they spend.
+
+Tranox is an agent that removes those steps. The client pays each milestone in USD₮ from their own wallet, such as MiniPay, on the job page. When the work is done, the client approves the milestone with a free signature from the same wallet. The Tranox agent then checks on-chain that the client's money has arrived, gets a firm quote on Textile FX, swaps the USD₮ into the freelancer's currency (cNGN, IDRX, wARS, wBRL, wMXN or wCOP), and sends it straight to the freelancer's phone wallet. Every step is a Celo transaction with the attribution tag, and both the client and the freelancer can follow it on their own page with Celoscan links.
+
+Safety rules built into the agent:
+
+- No payout without the money: a milestone is paid only after the client's USD₮ for it has arrived on-chain.
+- Only the client can approve: approval needs a signature from the client wallet on the job, bound to the milestone, job and amount, valid for 10 minutes.
+- Only confirmed wallets: freelancer wallets must be on an allowlist confirmed with each freelancer; a changed profile cannot redirect a payout.
+- Spending limits per payout and per day, counted from the chain so restarts do not reset them.
+- Crash recovery: after an interruption the worker reads the chain and finishes, re-queues or holds each payout instead of guessing.
+- Retries that follow Textile FX's documented errors, and a 1 USD₮ minimum that matches Textile's firm-quote minimum.
+
+Production setup: the pages and data routes run on Vercel at tranoxweb.com. PocketBase and the payout worker run on a Google Compute Engine server at api.tranoxweb.com. The agent's private key exists only on that server.
+
+## Required answers
+
+- **Agent wallet:** `0xB1eF0cEa020B273E1c30370a787B9447DfE14706`
+- **ERC-8004 agent ID:** `10085` (registration: https://celoscan.io/tx/0xe2f7143fbcf41ba8d18d5b29ab92ef64fa65dbb13b9bcb60389aeb3ffb8b3d1e)
+- **Self Agent ID (mainnet agentId):** **TODO** (passport scan in the Self app)
+- **Attribution tag:** `celo_37620e33107f`
+- **Payout wallet on Celo:** **TODO** (a team wallet for prizes, not the agent wallet)
+- **Named user:** **TODO**. Draft once the first paid job is done: "Barok, a freelancer in **TODO country**, was paid **TODO amount** for **TODO job** by **TODO client**. He received it in **TODO currency** in his phone wallet minutes after approval, instead of waiting days for a wire and paying **TODO** in fees." Plus a one-line quote from him.
+- **Team contacts:** **TODO** (name, email, Telegram and X handle for each member)
+- **Founder or project handles on X:** **TODO**
+- **Follow @Celo and @CeloDevs on X:** **TODO** (confirm)
+
+## Stablecoin Corridors track details
+
+- **Wallets used:** agent `0xB1eF0cEa020B273E1c30370a787B9447DfE14706`
+- **Corridors:** USD₮ to cNGN, IDRX, wARS, wBRL, wMXN and wCOP; first live payout USD₮ to IDRX
+- **Tagged Textile FX conversion and payout, 21 Nov 2026:** 1 USD₮ converted to 18,350.35 IDRX and paid to a freelancer outside the team
+  - USD₮ approval: https://celoscan.io/tx/0x7e4fbbe99cf24a9269834821e4ebd8959e638717079161024fb72ea4c94ac82e
+  - Swap on Textile FX: https://celoscan.io/tx/0xeabac9235657087c5219b0df07e445e578d25da9401a8bb4b55036ba16bdf993
+  - Payout to the freelancer: https://celoscan.io/tx/0x2ea6b85d3ac9907c79ab61674cb21dd47a3109567b7bc8aeaa9ef20413a56178
+- **Client payment through the job page, tagged by the page:** https://celoscan.io/tx/0x3d6f3415eb3201bde488c4de31f638a5a15e73d03e141d07cbc8b92abda67c45
+- **Gas:** no relayer and no sponsored gas. The agent pays its own gas in CELO for registration, approvals, swaps and payouts. Clients pay their own network fee in MiniPay when they pay a milestone.
+
+## How users were reached
+
+**TODO:** how Barok and the clients were found (for example: personal network, freelancer communities), in one or two sentences.
