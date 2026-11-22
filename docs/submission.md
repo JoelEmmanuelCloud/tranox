@@ -39,7 +39,7 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 - **Self Agent ID (mainnet agentId):** `210`, registered 22 Nov 2026 in the Self Agent Registry on Celo mainnet (`0xaC3DF9ABf80d0F5c020C06B04Cced27763355944`). Badge key `0x25f2102457d7255C4B38967592c1259c88e145b6`, owned by a team member's wallet after a passport check that shares only "over 18" and "not on a sanctions list". The badge key only proves a human is behind the agent; all payments still go through the one agent wallet.
 - **Attribution tag:** `celo_37620e33107f`
 - **Payout wallet on Celo:** `0x6F25FC9CB7D0a0bf92dcE5514103232fa38ba2Bc` (the founder's MiniPay wallet, separate from the agent wallet)
-- **Named user:** Barok, a freelancer in Indonesia, outside the team. For the "Project documentation" milestone the client paid 1 USD₮ from MiniPay on the job page and approved it with a signature; about a minute later Barok received 18,343.62 IDRX in his wallet. Across two payouts he has received 36,693.97 IDRX, all with public, tagged transactions. The client on this job was the founder paying for real work. Quote from Barok: "Receiving the money was relatively easy." His wallet in MetaMask on Celo showing the 36,693.97 IDRX: `docs/img/barok-wallet-idrx.jpg`.
+- **Named user:** Barok, a freelancer in Indonesia, outside the team. For the "Project documentation" milestone the client paid 1 USD₮ from MiniPay on the job page and approved it with a signature; about a minute later Barok received 18,343.62 IDRX in his wallet. Across three payouts he has received 55,054.10 IDRX, all with public, tagged transactions. The client on this job was the founder paying for real work. Quote from Barok: "Receiving the money was relatively easy." His wallet in MetaMask on Celo showing 36,693.97 IDRX after the first two payouts: `docs/img/barok-wallet-idrx.jpg`.
 - **Team contacts:** Joel Emmanuel (founder). Email and Telegram are entered in the submission form only, not in this public repo.
 - **Founder or project handles on X:** [@joelCloud899799](https://x.com/joelCloud899799)
 - **Follow @Celo and @CeloDevs on X:** yes, confirmed by the founder on 22 Nov 2026
@@ -56,6 +56,12 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
   - Client payment: https://celoscan.io/tx/0x8c0c53322b1595fa8a54349824a608d304dbcd2baee5a3d91db5fd5a2940308d
   - Swap on Textile FX (1 USD₮ to 18,343.62 IDRX): https://celoscan.io/tx/0x8bd24a0b0ab51c9899284bf34c51aeb8ba564a8966c2ce70867ee4a8aa955b74
   - Payout to Barok: https://celoscan.io/tx/0x6d0de440990be68dc635c5dea5f1860a5274874f4fe9c988d50746b67474a75d
+- **Second milestone, 22 Nov 2026 ("Documentation update", 1 USD₮, paid to Barok in IDRX 23 seconds after approval):** recorded on the redesigned job page in MiniPay
+  - Client payment: https://celoscan.io/tx/0xb8bd00ddf90a66ab49719f4b7b8fd0ad62fba6b03e901eb09628272618e59bd5
+  - USD₮ approval: https://celoscan.io/tx/0x803ceed2e98df03c84c4025a4ced1e2fa5e53197996839ee6205d126dcb933c3
+  - Swap on Textile FX (1 USD₮ to 18,360.13 IDRX): https://celoscan.io/tx/0x337067070276cb0b583028aa2a15471b3c825355369c05440cfd0ff9a0e949e4
+  - Payout to Barok: https://celoscan.io/tx/0x9b1f0bc7e85bed1e9edd028001c5949874499e4e72bb44367cf2b61a3ec33636
+  - Funding note: the client wallet was short of 1 USD₮, so the agent sent it 0.7 USD₮ first (https://celoscan.io/tx/0x30e11cb40a3f256ea4ce0fc9239b3915806fac483a78839f2e6e6a30ec01aff3). We list it so nobody mistakes it for outside client money.
 - **Client payment through the job page, tagged by the page:** https://celoscan.io/tx/0x3d6f3415eb3201bde488c4de31f638a5a15e73d03e141d07cbc8b92abda67c45
 - **Gas:** no relayer and no sponsored gas. The agent pays its own gas in CELO for registration, approvals, swaps and payouts. Clients pay their own network fee in MiniPay when they pay a milestone.
 
