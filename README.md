@@ -114,7 +114,7 @@ npm run quote -- 5        # live Textile FX prices and depth for every currency
 
 ### 3. Pay a milestone
 
-1. In the PocketBase admin (`http://127.0.0.1:8090/_/`), add a **freelancer** with their wallet and payout currency, and add that wallet to `FREELANCER_ALLOWLIST`.
+1. In the PocketBase admin (`http://127.0.0.1:8090/_/`), add a **freelancer** with their wallet and payout currency, and add that wallet to `FREELANCER_ALLOWLIST`. The freelancer's wallet must be one that can show their local stablecoin, such as MetaMask on the Celo network. MiniPay only shows USD₮, USDC and USDm, so cNGN, IDRX and the wFIAT tokens sent there are safe but invisible. The freelancer page has an "Add token to my wallet" button and the token address for this.
 2. Add a **job** for that freelancer with the client's wallet in `client_wallet`.
 3. Add a **milestone** with the amount in USD₮, at least 1 USD₮ (the smallest swap Textile FX quotes). It starts as `pending`.
 4. Put the pages online (see below). Send the client `https://<public address>/job?id=<job id>` and the freelancer `https://<public address>/freelancer?id=<freelancer id>`.

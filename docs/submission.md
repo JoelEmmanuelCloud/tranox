@@ -28,6 +28,8 @@ Safety rules built into the agent:
 - Crash recovery: after an interruption the worker reads the chain and finishes, re-queues or holds each payout instead of guessing.
 - Retries that follow Textile FX's documented errors, and a 1 USD₮ minimum that matches Textile's firm-quote minimum.
 
+Wallets: clients pay from MiniPay or any Celo wallet. Freelancers receive into a wallet that can show their local stablecoin, such as MetaMask on Celo, because MiniPay only displays USD₮, USDC and USDm. The freelancer page explains this and has a one-tap "Add token to my wallet" button plus the token address.
+
 Production setup: the pages and data routes run on Vercel at tranoxweb.com. PocketBase and the payout worker run on a Google Compute Engine server at api.tranoxweb.com. The agent's private key exists only on that server.
 
 ## Required answers
