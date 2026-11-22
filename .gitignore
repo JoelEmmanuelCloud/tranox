@@ -6,3 +6,5 @@ dist/
 pocketbase/bin/
 pocketbase/pb_data/
 .agents/
+.vercel
+.env*
