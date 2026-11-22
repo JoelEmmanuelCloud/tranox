@@ -136,6 +136,8 @@ export async function freelancerView(id: string) {
   });
   return {
     freelancer: { name: freelancer.name, country: freelancer.country || null, currency },
+    wallet: String(freelancer.wallet_address || "") || null,
+    token: currency ? { symbol: currency, address: TOKENS[currency], decimals: await tokenDecimals(currency) } : null,
     rate_per_usdt: currency ? cachedRate(currency) : null,
     payouts: await Promise.all(
       payouts.map(async (p) => {
