@@ -72,7 +72,7 @@ function milestoneCard(m, index) {
     ? money(m.payout.received) + " " + cur + " received"
     : job.rate_per_usdt && cur ? "≈ " + money(m.amount_usdt * Number(job.rate_per_usdt), 0) + " " + cur : "";
   const buttons = [];
-  if (!["paid", "processing", "failed"].includes(m.status)) {
+  if (m.status === "pending" || m.status === "waiting_funds") {
     const b = el("button", { class: "btn btn-gold", type: "button" }, icon("wallet"), "Pay " + money(m.amount_usdt) + " USD₮");
     b.addEventListener("click", () => pay(m, box, b));
     buttons.push(b);
