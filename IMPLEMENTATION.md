@@ -179,6 +179,14 @@ wFIAT tokens (wARS, wBRL, wMXN, wCOP) use 18 decimals — read `decimals()` for 
 - [x] **Milestone: first real mainnet payout to a freelancer by 28 Nov.** Done 21 Nov (see the test above). The client side was also proven on mainnet the same day: a MiniPay payment through the job page carried the tag, the signed approval queued the payout, and the funds check saw the payment. A full client-funded milestone of at least 1 USD₮ is still to run with the first real client
   - MiniPay notes from that run: it refuses `wallet_switchEthereumChain` and data reads (`eth_call`, receipts) with HTTP 403, so the job page reads the network as a number, never asks to switch on Celo, gets USD₮ decimals and transaction status from the Tranox server, and names the wallet step when something fails. Open pages in MiniPay through Settings, Developer Settings, Load test page, with Use Testnet off
 
+## Production hosting (done 22 Nov)
+
+- [x] Pages and data routes on Vercel (project `tranox`, Hobby plan) at https://tranoxweb.com, with `www` redirecting to it. The domain was moved off the older `xofirawesite` project, which still exists at xofirawesite.vercel.app
+- [x] PocketBase and the worker on a Google Compute Engine e2-micro (`tranox-api`, us-central1-a, project `tranox` under the tranoxgroup Google account, Standard network tier, fixed IP 35.208.138.177, no service account). Data and `.env` copied from the laptop; nothing runs on the laptop any more
+- [x] https://api.tranoxweb.com through Caddy with a Let's Encrypt certificate; only `/api/*` passes; PocketBase rate limits on; a separate PocketBase login (`web@tranoxweb.com`) for the website, its password only on the server and in Vercel's sensitive settings
+- [x] Porkbun DNS: A record `api` to 35.208.138.177. `tranoxweb.com` and `www` already pointed at Vercel
+- [x] A 5 USD budget alert on the `tranox` Google project. The e2-micro and its disk are in the always-free tier; the public IPv4 address may cost about 3.60 USD a month
+
 ## Step 5 — Self Agent ID + x402 (29 Nov–3 Dec, stretch)
 
 - [ ] Expose a payout endpoint other agents can call (`POST /payout`)

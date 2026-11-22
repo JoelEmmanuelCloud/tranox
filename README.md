@@ -4,6 +4,8 @@ Tranox is an agent that pays freelancers in their own local currency on Celo. A 
 
 Built for Celo's Agents Open for Business hackathon, Stablecoin Corridors track.
 
+Live at **https://tranoxweb.com**.
+
 ## The problem
 
 A freelancer in Lagos or Jakarta who works for a client abroad usually gets paid in dollars through a bank wire or a payout platform. The money takes days to arrive, fees come off at each step, and then they still have to change dollars into the money they spend.
@@ -154,6 +156,18 @@ This free quick tunnel needs no account, but it is for testing: the address chan
 ### 4. Register the agent
 
 Host `agent-card.json` at a public URL, set `AGENT_CARD_URI` in `.env`, then run `npm run register:agent` to register on the ERC-8004 identity registry. **Real money** (gas only).
+
+## Production
+
+| Part | Runs on | Address |
+| --- | --- | --- |
+| Pages and data routes (`web/`, `api/index.ts`, `src/router.ts`) | Vercel, project `tranox` | https://tranoxweb.com |
+| PocketBase and the payout worker | Google Compute Engine e2-micro `tranox-api`, us-central1, systemd services `tranox-pb` and `tranox-worker` | https://api.tranoxweb.com |
+
+- The agent's private key lives only on the Google server, next to the worker. Vercel holds the agent's public address (`AGENT_ADDRESS`) and a separate PocketBase login used only by the website.
+- Caddy serves `api.tranoxweb.com` with an automatic Let's Encrypt certificate and passes on only `/api/*`; the PocketBase admin page is not reachable from the internet. PocketBase rate limits are on.
+- Deploy the pages with `vercel deploy --prod`. Update the server with `git pull` in `/opt/tranox/app`, then `sudo systemctl restart tranox-pb tranox-worker`.
+- Only one worker may run against a database. Do not start a local worker while the server's worker is running.
 
 ## Liquidity
 
