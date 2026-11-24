@@ -40,6 +40,7 @@ function walletHelp(data) {
   const t = data.token;
   if (!t) return null;
   const box = el("div", { class: "notice" });
+  const byHand = "In MetaMask on Celo, import a custom token with this address: " + t.address + " (symbol " + t.symbol + ", decimals " + t.decimals + ").";
   const actions = el("div", { class: "help-actions" });
   if (window.ethereum) {
     const add = el("button", { class: "btn btn-dark", type: "button" }, icon("wallet"), "Add " + t.symbol + " to my wallet");
@@ -48,9 +49,9 @@ function walletHelp(data) {
       try {
         const { eth } = await connect();
         const added = await eth.request({ method: "wallet_watchAsset", params: { type: "ERC20", options: { address: t.address, symbol: t.symbol, decimals: t.decimals } } });
-        notice(box, added ? "ok" : "info", added ? t.symbol + " is now listed in your wallet." : "Your wallet did not add " + t.symbol + ". Add it by hand with the token address below.");
+        notice(box, added ? "ok" : "info", added ? t.symbol + " is now listed in your wallet." : "Your wallet did not add " + t.symbol + ". " + byHand);
       } catch (e) {
-        notice(box, "error", "This wallet can't add tokens from a page. Add " + t.symbol + " by hand with the token address below. (" + errorText(e) + ")");
+        notice(box, "error", "Your wallet could not add " + t.symbol + " from this page. " + byHand + " Wallet message: " + errorText(e));
       } finally {
         restore();
       }
