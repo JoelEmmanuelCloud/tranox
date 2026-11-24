@@ -39,7 +39,7 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 - **Self Agent ID (mainnet agentId):** `210`, registered 22 Nov 2026 in the Self Agent Registry on Celo mainnet (`0xaC3DF9ABf80d0F5c020C06B04Cced27763355944`). Badge key `0x25f2102457d7255C4B38967592c1259c88e145b6`, owned by a team member's wallet after a passport check that shares only "over 18" and "not on a sanctions list". The badge key only proves a human is behind the agent; all payments still go through the one agent wallet.
 - **Attribution tag:** `celo_37620e33107f`
 - **Payout wallet on Celo:** `0x6F25FC9CB7D0a0bf92dcE5514103232fa38ba2Bc` (the founder's MiniPay wallet, separate from the agent wallet)
-- **Named user:** Godwin, a mobile developer in Port Harcourt, Nigeria, was paid 1,455.06 cNGN for "App screen fix", 35 seconds after approval. His client, Francis in Accra, Ghana, paid 1 USD₮ from his own MiniPay balance, with no top-up from us.
+- **Named user:** Godwin, a mobile developer in Port Harcourt, Nigeria, was paid 1,455.06 cNGN for "App screen fix", 35 seconds after approval. His client, Francis in Accra, Ghana, paid 1 USD₮ from his own MiniPay balance, with no top-up from us. Before this, Godwin received money through Luno.
 
   Barok, a freelancer in Indonesia, received 55,054.10 IDRX in three payouts: one was our own test run, and two were paid by the founder as client. For the last one, the agent first sent the client wallet 0.7 USD₮. Barok said: "Receiving the money was relatively easy."
 
