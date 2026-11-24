@@ -96,7 +96,7 @@ function render(data) {
       el("div", { class: "sub", text: paid.length + " of " + data.payouts.length + " payouts paid" + (pending ? " · " + money(pending) + " USD₮ on the way" : "") }),
       el("div", { class: "facts", "aria-label": "Payout details" },
         fact("You are paid in", f.currency || "Not set"),
-        fact("Today's rate", data.rate_per_usdt ? "1 USD₮ ≈ " + money(data.rate_per_usdt) + " " + f.currency : f.currency ? "Checking..." : "Unavailable"),
+        fact("Today's rate", data.rate_per_usdt ? "1 USD₮ ≈ " + money(data.rate_per_usdt) + " " + f.currency : f.currency && !data.rate_failed ? "Checking..." : "Unavailable"),
       ),
     ),
   );
@@ -125,8 +125,8 @@ async function load() {
     const cur = data.freelancer.currency;
     if (!data.rate_per_usdt && cur) {
       api("/api/rates/" + cur).then((r) => {
-        if (r.rate_per_usdt) render({ ...data, rate_per_usdt: r.rate_per_usdt });
-      }, () => {});
+        render({ ...data, rate_per_usdt: r.rate_per_usdt, rate_failed: !r.rate_per_usdt });
+      }, () => render({ ...data, rate_failed: true }));
     }
   } catch (e) {
     fail(errorText(e));
