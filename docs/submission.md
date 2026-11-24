@@ -9,7 +9,7 @@ Draft answers for the Loops House form, Agents Open for Business. Items marked *
 - **Repository:** https://github.com/JoelEmmanuelCloud/tranox
 - **Demo URL:** https://tranoxweb.com
 - **Walkthrough video:** https://youtu.be/qiLNXxhiJPU (2:01, unlisted; script in `docs/demo-script.md`)
-- **Screenshots:** home page, client job page, freelancer payout page (from tranoxweb.com)
+- **Screenshots:** home page, how it works, Godwin's payout page, Barok's wallet
 - **Logo:** `web/logo.png`
 - **Tracks:** Stablecoin Corridors (1st, 2nd and 3rd place bounties)
 
