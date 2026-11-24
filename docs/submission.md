@@ -23,7 +23,7 @@ Safety rules built into the agent:
 
 - No payout without the money: a milestone is paid only after the client's USD₮ for it has arrived on-chain.
 - Only the client can approve: approval needs a signature from the client wallet on the job, bound to the milestone, job and amount, valid for 10 minutes.
-- Only confirmed wallets: freelancer wallets must be on an allowlist confirmed with each freelancer; a changed profile cannot redirect a payout.
+- Only allowlisted wallets: freelancer wallets must be on the agent's allowlist; a changed profile cannot redirect a payout.
 - Spending limits per payout and per day, counted from the chain so restarts do not reset them.
 - Crash recovery: after an interruption the worker reads the chain and finishes, re-queues or holds each payout instead of guessing.
 - Retries that follow Textile FX's documented errors, and a 1 USD₮ minimum that matches Textile's firm-quote minimum.

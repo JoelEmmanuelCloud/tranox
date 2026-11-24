@@ -42,7 +42,7 @@ Each shot lists what is on screen, the caption shown on the video, and the words
 
 - **Screen:** "Built so nobody gets paid by mistake" section
 - **Caption:** No payout without the money
-- **Say:** "Tranox never pays before the client's money arrives, only pays wallets confirmed with each freelancer, has daily limits, and recovers safely if anything is interrupted."
+- **Say:** "Tranox never pays before the client's money arrives, only pays wallets on an allowlist, has daily limits, and recovers safely if anything is interrupted."
 
 ## 8. Public record (2:15 to 2:30)
 
