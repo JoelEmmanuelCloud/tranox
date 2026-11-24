@@ -28,9 +28,9 @@ Safety rules built into the agent:
 - Crash recovery: after an interruption the worker reads the chain and finishes, re-queues or holds each payout instead of guessing.
 - Retries that follow Textile FX's documented errors, and a 1 USD₮ minimum that matches Textile's firm-quote minimum.
 
-Wallets: clients pay from MiniPay or any Celo wallet. Freelancers receive into a wallet that can show their local stablecoin, such as MetaMask on Celo, because MiniPay only displays USD₮, USDC and USDm. The freelancer page explains this and has a one-tap "Add token to my wallet" button plus the token address.
+Wallets: clients pay from MiniPay or any Celo wallet. Freelancers receive into a wallet that can show their local stablecoin, such as MetaMask on Celo, because MiniPay only displays USD₮, USDC and USDm. The freelancer page explains this and has a button that asks the wallet to add the token (MetaMask refused cNGN in one test), plus the token address to add by hand.
 
-Production setup: the pages and data routes run on Vercel at tranoxweb.com. PocketBase and the payout worker run on a Google Compute Engine server at api.tranoxweb.com. The agent's private key exists only on that server.
+Production setup: the pages and data routes run on Vercel at tranoxweb.com. PocketBase and the payout worker run on a Google Compute Engine server at api.tranoxweb.com. The live worker runs on that server. The agent's key is also kept on the founder's laptop for manual runs. It is not on Vercel or in the repo.
 
 ## Required answers
 
@@ -39,20 +39,29 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 - **Self Agent ID (mainnet agentId):** `210`, registered 22 Nov 2026 in the Self Agent Registry on Celo mainnet (`0xaC3DF9ABf80d0F5c020C06B04Cced27763355944`). Badge key `0x25f2102457d7255C4B38967592c1259c88e145b6`, owned by a team member's wallet after a passport check that shares only "over 18" and "not on a sanctions list". The badge key only proves a human is behind the agent; all payments still go through the one agent wallet.
 - **Attribution tag:** `celo_37620e33107f`
 - **Payout wallet on Celo:** `0x6F25FC9CB7D0a0bf92dcE5514103232fa38ba2Bc` (the founder's MiniPay wallet, separate from the agent wallet)
-- **Named user:** Barok, a freelancer in Indonesia, outside the team. For the "Project documentation" milestone the client paid 1 USD₮ from MiniPay on the job page and approved it with a signature; about a minute later Barok received 18,343.62 IDRX in his wallet. Across three payouts he has received 55,054.10 IDRX, all with public, tagged transactions. The client on this job was the founder paying for real work. Quote from Barok: "Receiving the money was relatively easy." His wallet in MetaMask on Celo showing 36,693.97 IDRX after the first two payouts: `docs/img/barok-wallet-idrx.jpg`.
+- **Named user:** Godwin, a mobile developer in Port Harcourt, Nigeria, was paid 1,455.06 cNGN for "App screen fix", 35 seconds after approval. His client, Francis in Accra, Ghana, paid 1 USD₮ from his own MiniPay balance, with no top-up from us.
+
+  Barok, a freelancer in Indonesia, received 55,054.10 IDRX in three payouts: one was our own test run, and two were paid by the founder as client. For the last one, the agent first sent the client wallet 0.7 USD₮. Barok said: "Receiving the money was relatively easy."
+
+  The founder confirms both freelancers are outside the team and hold their own wallets. Users came from the founder's network. We have no measured time or cost savings yet.
 - **Team contacts:** Joel Emmanuel (founder). Email and Telegram are entered in the submission form only, not in this public repo.
 - **Founder or project handles on X:** [@joelCloud899799](https://x.com/joelCloud899799)
 - **Follow @Celo and @CeloDevs on X:** yes, confirmed by the founder on 22 Nov 2026
 
 ## Stablecoin Corridors track details
 
-- **Wallets used:** agent `0xB1eF0cEa020B273E1c30370a787B9447DfE14706`
-- **Corridors:** USD₮ to cNGN, IDRX, wARS, wBRL, wMXN and wCOP; first live payout USD₮ to IDRX
-- **Tagged Textile FX conversion and payout, 21 Nov 2026:** 1 USD₮ converted to 18,350.35 IDRX and paid to a freelancer outside the team
+- **Wallets used:** agent `0xB1eF0cEa020B273E1c30370a787B9447DfE14706`, client Francis `0x7F985C1506132DF93cBF9da5B50CeEb93a9b053b`, founder as client `0x6F25FC9CB7D0a0bf92dcE5514103232fa38ba2Bc`, freelancers Godwin `0x739fBF68a0d1fb70653Fa5D61c89845c00E1dC24` and Barok `0x105b0215a9eAB3db8AC67664Dde4cE482a5EB063`
+- **Corridors:** USD₮ to cNGN, IDRX, wARS, wBRL, wMXN and wCOP; live payouts so far USD₮ to cNGN and USD₮ to IDRX
+- **Our own test run, no client, 21 Nov 2026:** 1 USD₮ converted to 18,350.35 IDRX and paid to Barok
   - USD₮ approval: https://celoscan.io/tx/0x7e4fbbe99cf24a9269834821e4ebd8959e638717079161024fb72ea4c94ac82e
   - Swap on Textile FX: https://celoscan.io/tx/0xeabac9235657087c5219b0df07e445e578d25da9401a8bb4b55036ba16bdf993
   - Payout to the freelancer: https://celoscan.io/tx/0x2ea6b85d3ac9907c79ab61674cb21dd47a3109567b7bc8aeaa9ef20413a56178
-- **First full client-funded milestone, 22 Nov 2026 ("Project documentation", 1 USD₮, paid to Barok in IDRX):** the client paid from MiniPay on the job page, approved with a signature, and the agent checked the funds, swapped and paid, all tagged
+- **Francis in Accra pays Godwin in Port Harcourt, 23 Nov 2026 ("App screen fix", 1 USD₮ to 1,455.06 cNGN, paid 35 seconds after approval):**
+  - Client payment: https://celoscan.io/tx/0x40507e888c273ff724bfc9af92cd72710f42d4feed02ee23fc01fb4ed1c11305
+  - USD₮ approval: https://celoscan.io/tx/0xe9e3df3e7386215a18f874d21a9e25e3892ec8068d8e66e7a247d092adbc3dac
+  - Swap on Textile FX: https://celoscan.io/tx/0x764896dbab69a3d6cb973cb0ca4c711ed1f039c1695f1ea08dbb74623fc23ffb
+  - Payout to Godwin: https://celoscan.io/tx/0xc8123fbfa64bfa1af430b472c914880502d136d574e2fca08c5aad55cf1eae06
+- **First full milestone paid through the job page, with the founder as client, 22 Nov 2026 ("Project documentation", 1 USD₮, paid to Barok in IDRX):** the client paid from MiniPay on the job page, approved with a signature, and the agent checked the funds, swapped and paid, all tagged
   - Client payment: https://celoscan.io/tx/0x8c0c53322b1595fa8a54349824a608d304dbcd2baee5a3d91db5fd5a2940308d
   - Swap on Textile FX (1 USD₮ to 18,343.62 IDRX): https://celoscan.io/tx/0x8bd24a0b0ab51c9899284bf34c51aeb8ba564a8966c2ce70867ee4a8aa955b74
   - Payout to Barok: https://celoscan.io/tx/0x6d0de440990be68dc635c5dea5f1860a5274874f4fe9c988d50746b67474a75d
@@ -67,4 +76,4 @@ Production setup: the pages and data routes run on Vercel at tranoxweb.com. Pock
 
 ## How users were reached
 
-Barok is a freelancer from my network in Indonesia.
+Francis, Godwin and Barok came from the founder's network.
