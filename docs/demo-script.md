@@ -1,51 +1,59 @@
-# Tranox: demo video script (about 2 minutes 30 seconds)
+# Tranox: demo video script (2:01)
 
-Each shot lists what is on screen, the caption shown on the video, and the words to say over it. Every shot uses the live site or a real Celo transaction.
+The script of the published video: https://youtu.be/qiLNXxhiJPU
+
+Each shot lists what is on screen, the caption shown on the video, and the words spoken over it. The site shots and Celoscan shots are still captures. Francis's phone recording is sped up slightly. An ad line is cut from the Celoscan swap capture.
 
 ## 1. The problem (0:00 to 0:15)
 
 - **Screen:** tranoxweb.com, top of the page
 - **Caption:** Get paid abroad, spend it at home
-- **Say:** "Freelancers in Lagos, Jakarta or Buenos Aires often work for clients abroad who pay in dollars. The money takes days, fees come off at every step, and they still have to change it into the money they spend. Tranox fixes that."
+- **Say:** "Freelancers in Lagos, Jakarta and Buenos Aires often work for clients abroad who pay in dollars. The money takes days to arrive, and fees come off at every step. Tranox fixes that."
 
-## 2. What Tranox does (0:15 to 0:30)
+## 2. What Tranox does (0:15 to 0:29)
 
-- **Screen:** the payout card on the home page: Acme Studio, London, $20 to Ada, Jakarta, Rp 368,142
+- **Screen:** "How it works" section
 - **Caption:** Dollars in, local money out
-- **Say:** "The client pays a milestone in dollars. Tranox converts it on Textile FX and sends the freelancer naira, rupiah, pesos or reais, straight to their phone wallet."
+- **Say:** "The client pays a milestone in dollars. Tranox converts it on Textile FX, and sends the freelancer naira, rupiah, pesos or reais, straight to their phone wallet."
 
-## 3. The client pays (0:30 to 0:55)
+## 3. The client pays (0:29 to 0:47)
 
-- **Screen:** a job page on tranoxweb.com, then MiniPay confirming the USD₮ payment (record on the phone if possible)
-- **Caption:** The client pays from their own wallet
-- **Say:** "The client opens the job link in MiniPay and pays the milestone in USD₮. The payment carries our Celo attribution tag, so it is counted on-chain."
+- **Screen:** Francis's phone: the job page, Pay 1 USD₮, MiniPay's Send sheet, payment sent (recording 0:00 to 0:21)
+- **Caption:** Francis in Accra pays 1 USD₮ from MiniPay
+- **Say:** "Here, Francis, a client in Accra, Ghana, pays one USDT for an app screen fix. Francis opens the link in MiniPay, taps pay, and confirms the payment. It carries our Celo attribution tag, so it's counted on-chain."
 
-## 4. The client approves (0:55 to 1:10)
+## 4. The client approves (0:47 to 1:00)
 
-- **Screen:** the Approve button, then the signature request in the wallet
-- **Caption:** Approval is a free signature
-- **Say:** "When the work is done, the client approves with a free signature from the same wallet. A shared link can't release money: only the client's wallet can."
+- **Screen:** Francis's phone: Approve, MiniPay's signature sheet, approved (recording 0:24 to 0:43)
+- **Caption:** Francis approves with a free signature
+- **Say:** "Then Francis taps approve, and signs a short message in MiniPay. Signing is free, and a shared link can't release money. Only the client's wallet can."
 
-## 5. The agent converts and pays (1:10 to 1:40)
+## 5. The agent converts (1:00 to 1:13)
 
-- **Screen:** Celoscan: the swap (0xeabac923...), then the payout (0x2ea6b85d...)
-- **Caption:** 1 USD₮ became 18,350.35 IDRX, sent to Barok
-- **Say:** "The Tranox agent checks that the client's money has arrived, gets a firm quote on Textile FX, swaps it into Indonesian rupiah and sends it to the freelancer. Here is the real swap and the real payout on Celo mainnet, both tagged."
+- **Screen:** Celoscan: the swap (0x764896db...)
+- **Caption:** Swapped on Textile FX: 1 USD₮ became 1,455.06 cNGN
+- **Say:** "The Tranox agent checked that the client's money had arrived, then swapped it on Textile FX. One USDT in, one thousand, four hundred and fifty-five cNGN out."
 
-## 6. The freelancer sees it (1:40 to 1:55)
+## 6. The agent pays (1:13 to 1:23)
 
-- **Screen:** Barok's payout page on tranoxweb.com
-- **Caption:** Paid in his own currency
-- **Say:** "Barok sees the payment on his own page, in rupiah, with a link to every step."
+- **Screen:** Celoscan: the payout (0xc8123fbf...)
+- **Caption:** Paid in cNGN 35 seconds after approval
+- **Say:** "Thirty-five seconds after approval, the naira was in the freelancer's wallet. Every step is a tagged, public transaction."
 
-## 7. Built to be safe (1:55 to 2:15)
+## 7. The freelancer sees it (1:23 to 1:33)
+
+- **Screen:** Godwin's payout page on tranoxweb.com
+- **Caption:** Godwin in Port Harcourt sees it in naira
+- **Say:** "Godwin, the freelancer in Port Harcourt, sees the payment on this page, in naira, with a link to every step."
+
+## 8. Built to be safe (1:33 to 1:47)
 
 - **Screen:** "Built so nobody gets paid by mistake" section
-- **Caption:** No payout without the money
-- **Say:** "Tranox never pays before the client's money arrives, only pays wallets on an allowlist, has daily limits, and recovers safely if anything is interrupted."
+- **Caption:** No payout without the money, only allowlisted wallets
+- **Say:** "Tranox never pays before the client's money arrives. It only pays wallets on an allowlist, it has daily limits, and it recovers safely if anything is interrupted."
 
-## 8. Public record (2:15 to 2:30)
+## 9. Close (1:47 to 2:01)
 
-- **Screen:** the Public record section: ERC-8004 agent 10085, agent wallet, attribution tag, GitHub
-- **Caption:** tranoxweb.com
-- **Say:** "Tranox is registered as ERC-8004 agent 10085 on Celo, and every transaction is public. Get paid abroad, spend it at home."
+- **Screen:** end card: Get paid abroad, spend it at home
+- **Caption:** ERC-8004 agent 10085 · tranoxweb.com
+- **Say:** "Tranox is registered on Celo as ERC-8004 agent ten thousand and eighty-five. Get paid abroad, spend it at home. tranoxweb.com."
