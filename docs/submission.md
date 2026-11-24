@@ -8,7 +8,7 @@ Draft answers for the Loops House form, Agents Open for Business. Items marked *
 - **Tagline (under 250 characters):** Get paid abroad, spend it at home. Clients pay a milestone in USD₮; Tranox converts it on Textile FX and pays the freelancer naira, rupiah, pesos or reais on Celo, minutes after the work is approved.
 - **Repository:** https://github.com/JoelEmmanuelCloud/tranox
 - **Demo URL:** https://tranoxweb.com
-- **Walkthrough video:** https://youtu.be/o64pnZ2dufs (2:03, unlisted; script in `docs/demo-script.md`)
+- **Walkthrough video:** https://youtu.be/qiLNXxhiJPU (2:01, unlisted; script in `docs/demo-script.md`)
 - **Screenshots:** home page, client job page, freelancer payout page (from tranoxweb.com)
 - **Logo:** `web/logo.png`
 - **Tracks:** Stablecoin Corridors (1st, 2nd and 3rd place bounties)
