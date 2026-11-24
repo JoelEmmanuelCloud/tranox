@@ -26,7 +26,7 @@ Hi! I'd like to pay you for a small job through Tranox. You'll be paid in **cNGN
 
 - When the client approves your work, the cNGN arrives in your wallet in under a minute.
 - You'll get a link to your own page that shows every payment.
-- To see the cNGN in MetaMask, open your page in MetaMask's built-in browser and tap **"Add cNGN to my wallet"**.
+- To see the cNGN in MetaMask, open your page in MetaMask's built-in browser and tap **"Add cNGN to my wallet"**. If MetaMask refuses, import it by hand as a custom token on Celo: address `0xF6829D7393dAe24509eb1E52eE8e572e2E271a4f`, symbol `cNGN`, decimals `6`.
 - Receiving costs you nothing.
 
 ---
